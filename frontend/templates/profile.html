@@ -1,0 +1,864 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile - GearGuard{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+  {% include "partials/sidebar.html" %}
+  
+  <main class="main-content">
+    <header class="page-header">
+      <div class="page-header-content">
+        <div class="page-title-section">
+          <nav class="page-breadcrumb">
+            <a href="/">Home</a>
+            <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i>
+            <span>Profile</span>
+          </nav>
+          <h1 class="page-title">My Profile</h1>
+        </div>
+        
+        <div class="page-actions">
+          <a href="/settings" class="btn btn-secondary">
+            <i data-lucide="settings" style="width: 18px; height: 18px;"></i>
+            Settings
+          </a>
+          <a href="/auth/logout" class="btn btn-danger">
+            <i data-lucide="log-out" style="width: 18px; height: 18px;"></i>
+            Sign Out
+          </a>
+        </div>
+      </div>
+    </header>
+    
+    <div class="page-body">
+      <div class="page-body-inner">
+        <div class="profile-layout">
+          <!-- Profile Card -->
+          <div class="profile-card">
+            <div class="profile-header">
+              <div class="profile-avatar" id="profile-avatar">
+                <i data-lucide="user" style="width: 48px; height: 48px;"></i>
+              </div>
+              <div class="profile-info">
+                <h2 class="profile-name" id="profile-name">Loading...</h2>
+                <p class="profile-role" id="profile-role">-</p>
+                <span class="profile-badge online" id="profile-status">Online</span>
+              </div>
+              <button class="btn btn-secondary btn-sm" onclick="openEditModal()">
+                <i data-lucide="edit-2" style="width: 14px; height: 14px;"></i>
+                Edit Profile
+              </button>
+            </div>
+            
+            <div class="profile-details">
+              <div class="detail-grid">
+                <div class="detail-item">
+                  <div class="detail-icon">
+                    <i data-lucide="mail" style="width: 18px; height: 18px;"></i>
+                  </div>
+                  <div class="detail-content">
+                    <span class="detail-label">Email</span>
+                    <span class="detail-value" id="profile-email">-</span>
+                  </div>
+                </div>
+                <div class="detail-item">
+                  <div class="detail-icon">
+                    <i data-lucide="user" style="width: 18px; height: 18px;"></i>
+                  </div>
+                  <div class="detail-content">
+                    <span class="detail-label">Username</span>
+                    <span class="detail-value" id="profile-username">-</span>
+                  </div>
+                </div>
+                <div class="detail-item">
+                  <div class="detail-icon">
+                    <i data-lucide="shield" style="width: 18px; height: 18px;"></i>
+                  </div>
+                  <div class="detail-content">
+                    <span class="detail-label">Role</span>
+                    <span class="detail-value" id="profile-role-detail">-</span>
+                  </div>
+                </div>
+                <div class="detail-item">
+                  <div class="detail-icon">
+                    <i data-lucide="calendar" style="width: 18px; height: 18px;"></i>
+                  </div>
+                  <div class="detail-content">
+                    <span class="detail-label">Member Since</span>
+                    <span class="detail-value" id="profile-joined">-</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Stats Section -->
+          <div class="profile-section">
+            <h3 class="section-title">
+              <i data-lucide="bar-chart-2" style="width: 20px; height: 20px;"></i>
+              Activity Overview
+            </h3>
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-icon requests">
+                  <i data-lucide="clipboard-list" style="width: 24px; height: 24px;"></i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-value" id="stat-requests">0</div>
+                  <div class="stat-label">Requests Created</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon completed">
+                  <i data-lucide="check-circle" style="width: 24px; height: 24px;"></i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-value" id="stat-completed">0</div>
+                  <div class="stat-label">Completed Tasks</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon hours">
+                  <i data-lucide="clock" style="width: 24px; height: 24px;"></i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-value" id="stat-hours">0h</div>
+                  <div class="stat-label">Total Hours</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon equipment">
+                  <i data-lucide="box" style="width: 24px; height: 24px;"></i>
+                </div>
+                <div class="stat-content">
+                  <div class="stat-value" id="stat-equipment">0</div>
+                  <div class="stat-label">Equipment Managed</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Recent Activity -->
+          <div class="profile-section">
+            <h3 class="section-title">
+              <i data-lucide="activity" style="width: 20px; height: 20px;"></i>
+              Recent Activity
+            </h3>
+            <div class="activity-list" id="activity-list">
+              <div class="loading-placeholder">
+                <i data-lucide="loader" class="spinning"></i>
+                Loading activity...
+              </div>
+            </div>
+          </div>
+          
+          <!-- Quick Actions -->
+          <div class="profile-section">
+            <h3 class="section-title">
+              <i data-lucide="zap" style="width: 20px; height: 20px;"></i>
+              Quick Actions
+            </h3>
+            <div class="quick-actions">
+              <a href="/requests" class="action-card">
+                <div class="action-icon">
+                  <i data-lucide="plus-circle" style="width: 24px; height: 24px;"></i>
+                </div>
+                <div class="action-content">
+                  <span class="action-title">New Request</span>
+                  <span class="action-desc">Create maintenance request</span>
+                </div>
+                <i data-lucide="chevron-right" style="width: 18px; height: 18px;"></i>
+              </a>
+              <a href="/equipment" class="action-card">
+                <div class="action-icon">
+                  <i data-lucide="box" style="width: 24px; height: 24px;"></i>
+                </div>
+                <div class="action-content">
+                  <span class="action-title">View Equipment</span>
+                  <span class="action-desc">Browse all equipment</span>
+                </div>
+                <i data-lucide="chevron-right" style="width: 18px; height: 18px;"></i>
+              </a>
+              <a href="/calendar" class="action-card">
+                <div class="action-icon">
+                  <i data-lucide="calendar" style="width: 24px; height: 24px;"></i>
+                </div>
+                <div class="action-content">
+                  <span class="action-title">Calendar</span>
+                  <span class="action-desc">View maintenance schedule</span>
+                </div>
+                <i data-lucide="chevron-right" style="width: 18px; height: 18px;"></i>
+              </a>
+              <a href="/reports" class="action-card">
+                <div class="action-icon">
+                  <i data-lucide="bar-chart-3" style="width: 24px; height: 24px;"></i>
+                </div>
+                <div class="action-content">
+                  <span class="action-title">Reports</span>
+                  <span class="action-desc">View analytics & reports</span>
+                </div>
+                <i data-lucide="chevron-right" style="width: 18px; height: 18px;"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal-overlay" id="edit-modal" style="display: none;">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title">Edit Profile</h2>
+      <button class="modal-close" onclick="closeEditModal()">
+        <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+      </button>
+    </div>
+    <form id="edit-form" onsubmit="saveProfile(event)">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" class="form-input" id="edit-name" placeholder="Your full name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input type="text" class="form-input" id="edit-username" placeholder="Username">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-input" id="edit-email" placeholder="your@email.com">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary">
+          <i data-lucide="save" style="width: 16px; height: 16px;"></i>
+          Save Changes
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+.profile-layout {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.profile-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: var(--space-xl);
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  padding: var(--space-xl);
+  background: linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%);
+  color: white;
+}
+
+.profile-avatar {
+  width: 100px;
+  height: 100px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  font-weight: 700;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+}
+
+.profile-info {
+  flex: 1;
+}
+
+.profile-name {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: var(--space-xs);
+}
+
+.profile-role {
+  font-size: 14px;
+  opacity: 0.9;
+  margin-bottom: var(--space-sm);
+}
+
+.profile-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.profile-badge.online::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background: #22c55e;
+  border-radius: 50%;
+}
+
+.profile-header .btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+.profile-header .btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.profile-details {
+  padding: var(--space-xl);
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-lg);
+}
+
+@media (max-width: 600px) {
+  .detail-grid { grid-template-columns: 1fr; }
+  .profile-header { flex-direction: column; text-align: center; }
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  background: var(--muted-bg);
+  border-radius: var(--radius-md);
+}
+
+.detail-icon {
+  width: 40px;
+  height: 40px;
+  background: var(--card-bg);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+}
+
+.detail-label {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+.detail-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.profile-section {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  margin-bottom: var(--space-xl);
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-lg);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-md);
+}
+
+@media (max-width: 900px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 500px) {
+  .stats-grid { grid-template-columns: 1fr; }
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-lg);
+  background: var(--muted-bg);
+  border-radius: var(--radius-md);
+}
+
+.stat-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-icon.requests { background: var(--primary-bg); color: var(--primary); }
+.stat-icon.completed { background: var(--success-bg); color: var(--success); }
+.stat-icon.hours { background: var(--warning-bg); color: var(--warning); }
+.stat-icon.equipment { background: #f3e8ff; color: #7c3aed; }
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  background: var(--muted-bg);
+  border-radius: var(--radius-md);
+  transition: background 0.2s;
+}
+
+.activity-item:hover {
+  background: var(--border-color);
+}
+
+.activity-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.activity-icon.created { background: var(--primary-bg); color: var(--primary); }
+.activity-icon.completed { background: var(--success-bg); color: var(--success); }
+.activity-icon.updated { background: var(--warning-bg); color: var(--warning); }
+
+.activity-content { flex: 1; }
+
+.activity-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.activity-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.activity-time {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-md);
+}
+
+@media (max-width: 600px) {
+  .quick-actions { grid-template-columns: 1fr; }
+}
+
+.action-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-lg);
+  background: var(--muted-bg);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.action-card:hover {
+  background: var(--border-color);
+  transform: translateX(4px);
+}
+
+.action-icon {
+  width: 48px;
+  height: 48px;
+  background: var(--primary-bg);
+  color: var(--primary);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-content { flex: 1; }
+
+.action-title {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.action-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.action-card > i {
+  color: var(--text-muted);
+}
+
+.loading-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  padding: var(--space-xl);
+  color: var(--text-muted);
+}
+
+.spinning { animation: spin 1s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: var(--card-bg);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 480px;
+  box-shadow: var(--shadow-xl);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-lg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: var(--space-xs);
+  border-radius: var(--radius-md);
+}
+
+.modal-close:hover {
+  background: var(--muted-bg);
+}
+
+.modal-body {
+  padding: var(--space-lg);
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+  padding: var(--space-lg);
+  border-top: 1px solid var(--border-color);
+}
+
+.form-group {
+  margin-bottom: var(--space-lg);
+}
+
+.form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-xs);
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-bg);
+}
+
+.empty-activity {
+  text-align: center;
+  padding: var(--space-xl);
+  color: var(--text-muted);
+}
+</style>
+
+<script>
+let currentUser = null;
+
+document.addEventListener('DOMContentLoaded', loadProfile);
+
+async function loadProfile() {
+  try {
+    const data = await GearGuardAPI.users.getCurrentUser();
+    currentUser = data?.user || data;
+    
+    if (currentUser) {
+      renderProfile();
+      loadStats();
+      loadActivity();
+    } else {
+      showLoginRequired();
+    }
+  } catch (error) {
+    console.error('Failed to load profile:', error);
+    showLoginRequired();
+  }
+}
+
+function renderProfile() {
+  // Set avatar initials
+  const initials = getInitials(currentUser.name || currentUser.username);
+  document.getElementById('profile-avatar').innerHTML = initials;
+  
+  // Set profile info
+  document.getElementById('profile-name').textContent = currentUser.name || currentUser.username || 'User';
+  document.getElementById('profile-role').textContent = formatRole(currentUser.role);
+  document.getElementById('profile-email').textContent = currentUser.email || '-';
+  document.getElementById('profile-username').textContent = currentUser.username || '-';
+  document.getElementById('profile-role-detail').textContent = formatRole(currentUser.role);
+  document.getElementById('profile-joined').textContent = currentUser.created_at ? 
+    formatDate(currentUser.created_at) : 'Recently';
+  
+  lucide.createIcons();
+}
+
+function getInitials(name) {
+  if (!name) return 'U';
+  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+}
+
+function formatRole(role) {
+  const roles = {
+    admin: 'Administrator',
+    manager: 'Manager',
+    technician: 'Technician',
+    user: 'User'
+  };
+  return roles[role] || role || 'User';
+}
+
+function formatDate(dateStr) {
+  return new Date(dateStr).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+}
+
+async function loadStats() {
+  try {
+    const [reqData, eqData] = await Promise.all([
+      GearGuardAPI.requests.getAll(),
+      GearGuardAPI.equipment.getAll()
+    ]);
+    
+    const requests = reqData.requests || reqData || [];
+    const equipment = eqData.equipment || eqData || [];
+    
+    const userRequests = requests.filter(r => 
+      r.requester_email === currentUser.email || r.created_by === currentUser.id
+    );
+    
+    const completed = userRequests.filter(r => r.stage?.name === 'Done').length;
+    const totalHours = userRequests.reduce((sum, r) => sum + (r.duration || 0), 0);
+    
+    document.getElementById('stat-requests').textContent = userRequests.length || requests.length;
+    document.getElementById('stat-completed').textContent = completed || requests.filter(r => r.stage?.name === 'Done').length;
+    document.getElementById('stat-hours').textContent = (totalHours || requests.reduce((s, r) => s + (r.duration || 0), 0)) + 'h';
+    document.getElementById('stat-equipment').textContent = equipment.length;
+  } catch (error) {
+    console.error('Failed to load stats:', error);
+  }
+}
+
+async function loadActivity() {
+  try {
+    const data = await GearGuardAPI.requests.getAll();
+    const requests = (data.requests || data || [])
+      .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
+      .slice(0, 5);
+    
+    const activityList = document.getElementById('activity-list');
+    
+    if (requests.length === 0) {
+      activityList.innerHTML = `
+        <div class="empty-activity">
+          <i data-lucide="inbox" style="width: 48px; height: 48px; margin-bottom: var(--space-md);"></i>
+          <p>No recent activity</p>
+        </div>
+      `;
+      lucide.createIcons();
+      return;
+    }
+    
+    activityList.innerHTML = requests.map(req => {
+      const isCompleted = req.stage?.name === 'Done';
+      const iconClass = isCompleted ? 'completed' : 'created';
+      const icon = isCompleted ? 'check-circle' : 'clipboard-list';
+      const action = isCompleted ? 'Completed' : 'Created request';
+      
+      return `
+        <a href="/requests/${req.id}" class="activity-item">
+          <div class="activity-icon ${iconClass}">
+            <i data-lucide="${icon}" style="width: 16px; height: 16px;"></i>
+          </div>
+          <div class="activity-content">
+            <div class="activity-title">${action}: ${req.name || 'Maintenance Request'}</div>
+            <div class="activity-meta">${req.equipment?.name || 'No equipment'} • ${req.stage?.name || 'New'}</div>
+          </div>
+          <div class="activity-time">${timeAgo(req.created_at)}</div>
+        </a>
+      `;
+    }).join('');
+    
+    lucide.createIcons();
+  } catch (error) {
+    console.error('Failed to load activity:', error);
+    document.getElementById('activity-list').innerHTML = `
+      <div class="empty-activity">
+        <p>Failed to load activity</p>
+      </div>
+    `;
+  }
+}
+
+function timeAgo(dateStr) {
+  if (!dateStr) return 'Recently';
+  
+  const date = new Date(dateStr);
+  const now = new Date();
+  const seconds = Math.floor((now - date) / 1000);
+  
+  if (seconds < 60) return 'Just now';
+  if (seconds < 3600) return Math.floor(seconds / 60) + 'm ago';
+  if (seconds < 86400) return Math.floor(seconds / 3600) + 'h ago';
+  if (seconds < 604800) return Math.floor(seconds / 86400) + 'd ago';
+  return formatDate(dateStr);
+}
+
+function showLoginRequired() {
+  document.getElementById('profile-name').textContent = 'Guest User';
+  document.getElementById('profile-role').textContent = 'Not logged in';
+  document.getElementById('profile-email').textContent = '-';
+  document.getElementById('profile-username').textContent = '-';
+  document.getElementById('activity-list').innerHTML = `
+    <div class="empty-activity">
+      <a href="/login" class="btn btn-primary">Login to see your activity</a>
+    </div>
+  `;
+}
+
+function openEditModal() {
+  if (currentUser) {
+    document.getElementById('edit-name').value = currentUser.name || '';
+    document.getElementById('edit-username').value = currentUser.username || '';
+    document.getElementById('edit-email').value = currentUser.email || '';
+  }
+  document.getElementById('edit-modal').style.display = 'flex';
+  lucide.createIcons();
+}
+
+function closeEditModal() {
+  document.getElementById('edit-modal').style.display = 'none';
+}
+
+async function saveProfile(event) {
+  event.preventDefault();
+  
+  const data = {
+    name: document.getElementById('edit-name').value,
+    username: document.getElementById('edit-username').value,
+    email: document.getElementById('edit-email').value
+  };
+  
+  try {
+    await GearGuardAPI.users.updateProfile(data);
+    closeEditModal();
+    currentUser = { ...currentUser, ...data };
+    renderProfile();
+    alert('Profile updated successfully!');
+  } catch (error) {
+    alert('Failed to update profile: ' + error.message);
+  }
+}
+
+// Close modal on overlay click
+document.addEventListener('click', (e) => {
+  if (e.target.id === 'edit-modal') closeEditModal();
+});
+
+// Close modal on Escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeEditModal();
+});
+</script>
+{% endblock %}

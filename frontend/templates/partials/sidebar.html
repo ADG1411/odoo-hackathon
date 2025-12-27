@@ -68,6 +68,19 @@
         <span>History</span>
       </a>
     </div>
+    
+    <!-- Account Section -->
+    <div class="nav-section">
+      <div class="nav-section-title">Account</div>
+      <a href="/profile" class="nav-item {{ 'active' if request.path == '/profile' else '' }}">
+        <i data-lucide="user" class="nav-item-icon"></i>
+        <span>My Profile</span>
+      </a>
+      <a href="/settings" class="nav-item {{ 'active' if request.path == '/settings' else '' }}">
+        <i data-lucide="settings" class="nav-item-icon"></i>
+        <span>Settings</span>
+      </a>
+    </div>
   </nav>
   
   <!-- Footer / User Menu -->
@@ -84,7 +97,7 @@
     </div>
     
     <!-- User Dropdown -->
-    <div class="user-dropdown hidden" id="user-dropdown" style="
+    <div class="user-dropdown" id="user-dropdown" style="
       position: absolute;
       bottom: 100%;
       left: var(--space-md);
@@ -95,14 +108,16 @@
       border: 1px solid var(--border-light);
       padding: var(--space-sm);
       margin-bottom: var(--space-sm);
+      display: none;
+      z-index: 200;
     ">
+      <a href="/profile" class="nav-item" style="margin-bottom: 0;">
+        <i data-lucide="user" class="nav-item-icon"></i>
+        <span>My Profile</span>
+      </a>
       <a href="/settings" class="nav-item" style="margin-bottom: 0;">
         <i data-lucide="settings" class="nav-item-icon"></i>
         <span>Settings</span>
-      </a>
-      <a href="/profile" class="nav-item" style="margin-bottom: 0;">
-        <i data-lucide="user" class="nav-item-icon"></i>
-        <span>Profile</span>
       </a>
       <hr style="border: none; border-top: 1px solid var(--border-light); margin: var(--space-sm) 0;">
       <a href="/auth/logout" class="nav-item" style="color: var(--danger); margin-bottom: 0;">
@@ -158,9 +173,11 @@ function toggleSidebar() {
   overlay.classList.toggle('active');
 }
 
-function toggleUserDropdown() {
+function toggleUserDropdown(event) {
+  event.stopPropagation();
   const dropdown = document.getElementById('user-dropdown');
-  dropdown.classList.toggle('hidden');
+  const isVisible = dropdown.style.display === 'block';
+  dropdown.style.display = isVisible ? 'none' : 'block';
 }
 
 // Close dropdown when clicking outside
@@ -168,8 +185,8 @@ document.addEventListener('click', function(e) {
   const userMenu = document.getElementById('user-menu');
   const dropdown = document.getElementById('user-dropdown');
   
-  if (!userMenu.contains(e.target) && !dropdown.contains(e.target)) {
-    dropdown.classList.add('hidden');
+  if (dropdown && userMenu && !userMenu.contains(e.target) && !dropdown.contains(e.target)) {
+    dropdown.style.display = 'none';
   }
 });
 </script>

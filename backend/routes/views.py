@@ -99,5 +99,5 @@ def settings():
 
 @views.route('/profile')
 def profile():
-    """User profile page - redirects to settings"""
-    return render_template('settings.html')
+    """User profile page"""
+    return render_template('profile.html')
