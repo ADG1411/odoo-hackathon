@@ -35,6 +35,7 @@ instance/
 .webassets-cache
 *.db
 *.sqlite3
+flask_session/
 
 # Environment Variables
 .env
@@ -81,6 +82,11 @@ docker-compose.override.yml
 htmlcov/
 .tox/
 .hypothesis/
+
+# Test outputs
+test_results/
+test_reports/
+*.test.log
 
 # Jupyter Notebook
 .ipynb_checkpoints
