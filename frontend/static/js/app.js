@@ -3,6 +3,21 @@
  * Modern Industrial SaaS UI Interactions
  */
 
+// ==================== LOGOUT HANDLER ====================
+async function handleLogout(event) {
+  if (event) {
+    event.preventDefault();
+  }
+  try {
+    await GearGuardAPI.auth.logout();
+    window.location.href = '/login';
+  } catch (error) {
+    console.error('Logout failed:', error);
+    // Even if logout fails, redirect to login
+    window.location.href = '/login';
+  }
+}
+
 // ==================== TOAST NOTIFICATIONS ====================
 function showToast(title, message, type = 'info') {
   const container = document.getElementById('toast-container');

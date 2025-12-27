@@ -96,6 +96,7 @@ const GearGuardAPI = {
         const response = await fetch(`${API_BASE}/equipment`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify(data)
         });
         if (!response.ok) {
@@ -114,6 +115,7 @@ const GearGuardAPI = {
         const response = await fetch(`${API_BASE}/equipment/${id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify(data)
         });
         if (!response.ok) {
@@ -130,7 +132,8 @@ const GearGuardAPI = {
     async delete(id) {
       try {
         const response = await fetch(`${API_BASE}/equipment/${id}`, {
-          method: 'DELETE'
+          method: 'DELETE',
+          credentials: 'include'
         });
         if (!response.ok) throw new Error('Failed to delete equipment');
         return true;
@@ -167,6 +170,7 @@ const GearGuardAPI = {
         const response = await fetch(`${API_BASE}/equipment/${id}/scrap`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({ reason })
         });
         if (!response.ok) throw new Error('Failed to scrap equipment');
@@ -207,6 +211,7 @@ const GearGuardAPI = {
         const response = await fetch(`${API_BASE}/categories`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify(data)
         });
         if (!response.ok) throw new Error('Failed to create category');
@@ -222,6 +227,7 @@ const GearGuardAPI = {
         const response = await fetch(`${API_BASE}/categories/${id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify(data)
         });
         if (!response.ok) throw new Error('Failed to update category');
@@ -235,7 +241,8 @@ const GearGuardAPI = {
     async delete(id) {
       try {
         const response = await fetch(`${API_BASE}/categories/${id}`, {
-          method: 'DELETE'
+          method: 'DELETE',
+          credentials: 'include'
         });
         if (!response.ok) throw new Error('Failed to delete category');
         return true;
@@ -275,6 +282,7 @@ const GearGuardAPI = {
         const response = await fetch(`${API_BASE}/teams`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify(data)
         });
         if (!response.ok) throw new Error('Failed to create team');
@@ -290,6 +298,7 @@ const GearGuardAPI = {
         const response = await fetch(`${API_BASE}/teams/${id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify(data)
         });
         if (!response.ok) throw new Error('Failed to update team');
@@ -303,7 +312,8 @@ const GearGuardAPI = {
     async delete(id) {
       try {
         const response = await fetch(`${API_BASE}/teams/${id}`, {
-          method: 'DELETE'
+          method: 'DELETE',
+          credentials: 'include'
         });
         if (!response.ok) throw new Error('Failed to delete team');
         return true;
@@ -318,6 +328,7 @@ const GearGuardAPI = {
         const response = await fetch(`${API_BASE}/teams/${teamId}/members`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify(data)
         });
         if (!response.ok) throw new Error('Failed to add member');
@@ -331,7 +342,8 @@ const GearGuardAPI = {
     async removeMember(teamId, memberId) {
       try {
         const response = await fetch(`${API_BASE}/teams/${teamId}/members/${memberId}`, {
-          method: 'DELETE'
+          method: 'DELETE',
+          credentials: 'include'
         });
         if (!response.ok) throw new Error('Failed to remove member');
         return true;
@@ -386,6 +398,7 @@ const GearGuardAPI = {
         const response = await fetch(`${API_BASE}/requests`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify(data)
         });
         if (!response.ok) {
@@ -404,6 +417,7 @@ const GearGuardAPI = {
         const response = await fetch(`${API_BASE}/requests/${id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify(data)
         });
         if (!response.ok) {
@@ -420,7 +434,8 @@ const GearGuardAPI = {
     async delete(id) {
       try {
         const response = await fetch(`${API_BASE}/requests/${id}`, {
-          method: 'DELETE'
+          method: 'DELETE',
+          credentials: 'include'
         });
         if (!response.ok) throw new Error('Failed to delete request');
         return true;
@@ -435,6 +450,7 @@ const GearGuardAPI = {
         const response = await fetch(`${API_BASE}/requests/${id}/move-stage`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({ stage_id: stageId })
         });
         if (!response.ok) {
@@ -453,6 +469,7 @@ const GearGuardAPI = {
         const response = await fetch(`${API_BASE}/requests/${id}/assign`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({ team_id: teamId })
         });
         if (!response.ok) throw new Error('Failed to assign request');
@@ -524,6 +541,7 @@ const GearGuardAPI = {
         const response = await fetch('/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({ email, password })
         });
         if (!response.ok) {
@@ -539,7 +557,7 @@ const GearGuardAPI = {
     
     async logout() {
       try {
-        const response = await fetch('/auth/logout', { method: 'POST' });
+        const response = await fetch('/auth/logout', { method: 'POST', credentials: 'include' });
         if (!response.ok) throw new Error('Logout failed');
         return true;
       } catch (error) {
@@ -550,7 +568,7 @@ const GearGuardAPI = {
     
     async getCurrentUser() {
       try {
-        const response = await fetch('/auth/me');
+        const response = await fetch('/auth/me', { credentials: 'include' });
         if (!response.ok) return null;
         return await response.json();
       } catch (error) {
@@ -564,6 +582,7 @@ const GearGuardAPI = {
         const response = await fetch('/auth/signup', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify(data)
         });
         if (!response.ok) {
@@ -593,7 +612,7 @@ const GearGuardAPI = {
     
     async getCurrentUser() {
       try {
-        const response = await fetch('/auth/me');
+        const response = await fetch('/auth/me', { credentials: 'include' });
         if (!response.ok) return null;
         return await response.json();
       } catch (error) {
@@ -607,6 +626,7 @@ const GearGuardAPI = {
         const response = await fetch(`${API_BASE}/users/profile`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify(data)
         });
         if (!response.ok) {
@@ -625,6 +645,7 @@ const GearGuardAPI = {
         const response = await fetch(`${API_BASE}/users/change-password`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify(data)
         });
         if (!response.ok) {
