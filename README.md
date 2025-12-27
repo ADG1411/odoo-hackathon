@@ -1,7 +1,7 @@
 # GearGuard: The Ultimate Maintenance Tracker
 
-![Odoo Version](https://img.shields.io/badge/Odoo-17.0-blue)
-![License](https://img.shields.io/badge/License-LGPL--3-green)
+
+![License](https://img.shields.io/badge/License-Team-QuantCoder)
 ![Hackathon](https://img.shields.io/badge/Odoo-Hackathon-orange)
 
 ---
