@@ -1,0 +1,691 @@
+{% extends "base.html" %}
+
+{% block title %}Kanban Board - GearGuard{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Kanban Board Styles */
+.kanban-container {
+  display: flex;
+  gap: var(--space-md);
+  overflow-x: auto;
+  padding-bottom: var(--space-md);
+  min-height: calc(100vh - 200px);
+}
+
+.kanban-column {
+  flex: 0 0 320px;
+  background: var(--bg-hover);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 220px);
+}
+
+.kanban-column-header {
+  padding: var(--space-md) var(--space-lg);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  background: inherit;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  z-index: 1;
+}
+
+.kanban-column-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.kanban-column-color {
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-sm);
+}
+
+.kanban-column-count {
+  background: var(--muted-bg);
+  color: var(--text-muted);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.kanban-column-body {
+  flex: 1;
+  padding: var(--space-md);
+  overflow-y: auto;
+  min-height: 200px;
+}
+
+.kanban-cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  min-height: 100px;
+}
+
+/* Drag & Drop States */
+.kanban-column.drag-over {
+  background: var(--primary-bg);
+  border: 2px dashed var(--primary);
+}
+
+.kanban-column.drag-over .kanban-cards {
+  min-height: 150px;
+}
+
+/* Kanban Card */
+.kanban-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  cursor: grab;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.kanban-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.kanban-card:active {
+  cursor: grabbing;
+}
+
+.kanban-card.dragging {
+  opacity: 0.5;
+  transform: rotate(3deg);
+}
+
+.kanban-card.drag-preview {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  transform: rotate(3deg) scale(1.02);
+}
+
+.kanban-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: var(--space-sm);
+}
+
+.kanban-card-reference {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.kanban-card-priority {
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.kanban-card-priority.urgent {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.kanban-card-priority.high {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.kanban-card-priority.normal {
+  background: #e0f2fe;
+  color: #0284c7;
+}
+
+.kanban-card-priority.low {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.kanban-card-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-primary);
+  margin-bottom: var(--space-xs);
+  line-height: 1.4;
+}
+
+.kanban-card-equipment {
+  font-size: 12px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: var(--space-sm);
+}
+
+.kanban-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-sm);
+}
+
+.kanban-card-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: var(--bg-hover);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.kanban-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--border-light);
+}
+
+.kanban-card-assignee {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.kanban-card-assignee .avatar {
+  width: 24px;
+  height: 24px;
+  font-size: 10px;
+}
+
+.kanban-card-date {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.kanban-card-actions {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.kanban-card:hover .kanban-card-actions {
+  opacity: 1;
+}
+
+/* Empty State */
+.kanban-empty {
+  text-align: center;
+  padding: var(--space-xl);
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* Drop Placeholder */
+.drop-placeholder {
+  height: 80px;
+  border: 2px dashed var(--primary);
+  border-radius: var(--radius-md);
+  background: var(--primary-bg);
+  margin-bottom: var(--space-sm);
+}
+
+/* View Toggle */
+.view-toggle {
+  display: flex;
+  background: var(--bg-hover);
+  border-radius: var(--radius-md);
+  padding: 4px;
+}
+
+.view-toggle-btn {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.view-toggle-btn:hover {
+  color: var(--text-primary);
+}
+
+.view-toggle-btn.active {
+  background: var(--card-bg);
+  color: var(--primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Toast for drag feedback */
+.drag-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--text-primary);
+  color: white;
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+
+.drag-toast.visible {
+  opacity: 1;
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+  {% include "partials/sidebar.html" %}
+  
+  <main class="main-content">
+    <header class="page-header">
+      <div class="page-header-content">
+        <div class="page-title-section">
+          <nav class="page-breadcrumb">
+            <a href="/">Home</a>
+            <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i>
+            <span>Maintenance</span>
+          </nav>
+          <h1 class="page-title">Kanban Board</h1>
+        </div>
+        
+        <div class="page-actions">
+          <!-- View Toggle -->
+          <div class="view-toggle">
+            <a href="/requests" class="view-toggle-btn">
+              <i data-lucide="layout-grid" style="width: 16px; height: 16px;"></i>
+              Cards
+            </a>
+            <a href="/requests/kanban" class="view-toggle-btn active">
+              <i data-lucide="columns" style="width: 16px; height: 16px;"></i>
+              Kanban
+            </a>
+          </div>
+          
+          <!-- Search -->
+          <div class="search-wrapper" style="position: relative;">
+            <i data-lucide="search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--text-muted);"></i>
+            <input 
+              type="text" 
+              class="form-input" 
+              placeholder="Search requests..." 
+              id="search-input"
+              style="padding-left: 40px; width: 220px;"
+              oninput="filterCards()"
+            >
+          </div>
+          
+          <!-- Filter -->
+          <select class="form-select" id="filter-priority" onchange="filterCards()" style="width: 140px;">
+            <option value="">All Priorities</option>
+            <option value="urgent">Urgent</option>
+            <option value="high">High</option>
+            <option value="normal">Normal</option>
+            <option value="low">Low</option>
+          </select>
+          
+          <!-- Add Button -->
+          <button class="btn btn-primary" onclick="window.location.href='/requests?action=create'">
+            <i data-lucide="plus" style="width: 18px; height: 18px;"></i>
+            <span>Add Request</span>
+          </button>
+        </div>
+      </div>
+    </header>
+    
+    <div class="page-body">
+      <div class="page-body-inner">
+        <!-- Kanban Board -->
+        <div class="kanban-container" id="kanban-board">
+          <!-- Columns will be generated by JavaScript -->
+          <div style="text-align: center; padding: 60px; color: var(--text-muted);">
+            <i data-lucide="loader-2" class="spin" style="width: 32px; height: 32px;"></i>
+            <p style="margin-top: 12px;">Loading kanban board...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Drag Toast -->
+<div class="drag-toast" id="drag-toast">Drop to move request</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// State
+let stages = [];
+let requests = [];
+let draggedCard = null;
+let draggedRequest = null;
+
+// Initialize
+document.addEventListener('DOMContentLoaded', initKanban);
+
+async function initKanban() {
+  try {
+    // Load stages and requests in parallel
+    const [stagesData, requestsData] = await Promise.all([
+      GearGuardAPI.stages.getAll(),
+      GearGuardAPI.requests.getAll()
+    ]);
+    
+    stages = stagesData.stages || stagesData || [];
+    requests = requestsData.requests || requestsData || [];
+    
+    // Sort stages by sequence
+    stages.sort((a, b) => (a.sequence || 0) - (b.sequence || 0));
+    
+    renderKanbanBoard();
+    lucide.createIcons();
+  } catch (error) {
+    console.error('Failed to initialize kanban:', error);
+    document.getElementById('kanban-board').innerHTML = `
+      <div style="text-align: center; padding: 60px; color: var(--text-muted);">
+        <i data-lucide="alert-circle" style="width: 32px; height: 32px;"></i>
+        <p style="margin-top: 12px;">Failed to load kanban board</p>
+      </div>
+    `;
+    lucide.createIcons();
+  }
+}
+
+function renderKanbanBoard() {
+  const board = document.getElementById('kanban-board');
+  
+  if (stages.length === 0) {
+    board.innerHTML = `
+      <div style="text-align: center; padding: 60px; color: var(--text-muted);">
+        <i data-lucide="columns" style="width: 32px; height: 32px;"></i>
+        <p style="margin-top: 12px;">No stages configured. Please add stages first.</p>
+      </div>
+    `;
+    return;
+  }
+  
+  board.innerHTML = stages.map(stage => {
+    const stageRequests = getRequestsForStage(stage.id);
+    const color = stage.color || '#6366f1';
+    
+    return `
+      <div class="kanban-column" 
+           data-stage-id="${stage.id}" 
+           ondragover="handleDragOver(event)" 
+           ondragleave="handleDragLeave(event)"
+           ondrop="handleDrop(event, ${stage.id})">
+        <div class="kanban-column-header">
+          <div class="kanban-column-title">
+            <div class="kanban-column-color" style="background: ${color};"></div>
+            <span>${stage.name}</span>
+          </div>
+          <span class="kanban-column-count" data-stage-count="${stage.id}">${stageRequests.length}</span>
+        </div>
+        <div class="kanban-column-body">
+          <div class="kanban-cards" data-stage-cards="${stage.id}">
+            ${stageRequests.length > 0 
+              ? stageRequests.map(req => renderKanbanCard(req)).join('')
+              : '<div class="kanban-empty">No requests in this stage</div>'
+            }
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  lucide.createIcons();
+}
+
+function getRequestsForStage(stageId) {
+  const searchTerm = document.getElementById('search-input')?.value?.toLowerCase() || '';
+  const priorityFilter = document.getElementById('filter-priority')?.value || '';
+  
+  return requests.filter(req => {
+    if (req.stage_id !== stageId) return false;
+    
+    if (searchTerm) {
+      const matchesSearch = 
+        (req.name || '').toLowerCase().includes(searchTerm) ||
+        (req.reference || '').toLowerCase().includes(searchTerm) ||
+        (req.equipment_name || '').toLowerCase().includes(searchTerm);
+      if (!matchesSearch) return false;
+    }
+    
+    if (priorityFilter && req.priority !== priorityFilter) return false;
+    
+    return true;
+  });
+}
+
+function renderKanbanCard(req) {
+  const priorityClass = req.priority || 'normal';
+  const initials = getInitials(req.requester_name || 'Unknown');
+  const scheduledDate = req.scheduled_date ? formatDate(req.scheduled_date) : 'Not scheduled';
+  
+  return `
+    <div class="kanban-card" 
+         draggable="true"
+         data-request-id="${req.id}"
+         ondragstart="handleDragStart(event, ${req.id})"
+         ondragend="handleDragEnd(event)"
+         onclick="viewRequest(${req.id})">
+      <div class="kanban-card-header">
+        <span class="kanban-card-reference">${req.reference || 'MR-???'}</span>
+        <span class="kanban-card-priority ${priorityClass}">${priorityClass}</span>
+      </div>
+      <div class="kanban-card-title">${req.name || 'Untitled Request'}</div>
+      <div class="kanban-card-equipment">
+        <i data-lucide="box" style="width: 12px; height: 12px;"></i>
+        ${req.equipment_name || 'No equipment'}
+      </div>
+      <div class="kanban-card-meta">
+        <span class="kanban-card-tag">
+          <i data-lucide="${req.request_type === 'preventive' ? 'calendar-check' : 'wrench'}" style="width: 10px; height: 10px;"></i>
+          ${capitalizeFirst(req.request_type || 'corrective')}
+        </span>
+        ${req.team_name ? `
+          <span class="kanban-card-tag">
+            <i data-lucide="users" style="width: 10px; height: 10px;"></i>
+            ${req.team_name}
+          </span>
+        ` : ''}
+      </div>
+      <div class="kanban-card-footer">
+        <div class="kanban-card-assignee">
+          <div class="avatar">${initials}</div>
+          <span>${req.requester_name || 'Unassigned'}</span>
+        </div>
+        <span class="kanban-card-date">${scheduledDate}</span>
+      </div>
+    </div>
+  `;
+}
+
+// Drag & Drop Handlers
+function handleDragStart(event, requestId) {
+  draggedCard = event.target;
+  draggedRequest = requests.find(r => r.id === requestId);
+  
+  event.target.classList.add('dragging');
+  event.dataTransfer.effectAllowed = 'move';
+  event.dataTransfer.setData('text/plain', requestId);
+  
+  // Show toast
+  showDragToast('Drag to another column to move');
+  
+  // Highlight valid drop targets
+  document.querySelectorAll('.kanban-column').forEach(col => {
+    if (parseInt(col.dataset.stageId) !== draggedRequest.stage_id) {
+      col.style.transition = 'background 0.2s';
+    }
+  });
+}
+
+function handleDragEnd(event) {
+  event.target.classList.remove('dragging');
+  draggedCard = null;
+  draggedRequest = null;
+  
+  // Remove all drag states
+  document.querySelectorAll('.kanban-column').forEach(col => {
+    col.classList.remove('drag-over');
+  });
+  
+  hideDragToast();
+}
+
+function handleDragOver(event) {
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'move';
+  
+  const column = event.currentTarget;
+  column.classList.add('drag-over');
+  
+  // Update toast with target stage name
+  const stageId = parseInt(column.dataset.stageId);
+  const stage = stages.find(s => s.id === stageId);
+  if (stage && draggedRequest && stageId !== draggedRequest.stage_id) {
+    showDragToast(`Drop to move to "${stage.name}"`);
+  }
+}
+
+function handleDragLeave(event) {
+  // Only remove if leaving the column (not entering a child)
+  if (!event.currentTarget.contains(event.relatedTarget)) {
+    event.currentTarget.classList.remove('drag-over');
+  }
+}
+
+async function handleDrop(event, newStageId) {
+  event.preventDefault();
+  
+  const column = event.currentTarget;
+  column.classList.remove('drag-over');
+  
+  const requestId = parseInt(event.dataTransfer.getData('text/plain'));
+  const request = requests.find(r => r.id === requestId);
+  
+  if (!request || request.stage_id === newStageId) {
+    return;
+  }
+  
+  const oldStageId = request.stage_id;
+  const newStage = stages.find(s => s.id === newStageId);
+  const oldStage = stages.find(s => s.id === oldStageId);
+  
+  // Optimistic UI update
+  request.stage_id = newStageId;
+  request.stage_name = newStage?.name;
+  renderKanbanBoard();
+  
+  try {
+    // Call API to move stage
+    const response = await fetch(`/api/requests/${requestId}/move-stage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ stage_id: newStageId })
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to move request');
+    }
+    
+    const updatedRequest = await response.json();
+    
+    // Update local data
+    const index = requests.findIndex(r => r.id === requestId);
+    if (index !== -1) {
+      requests[index] = { ...requests[index], ...updatedRequest };
+    }
+    
+    showToast('Success', `Moved to "${newStage?.name}"`, 'success');
+    
+  } catch (error) {
+    console.error('Failed to move request:', error);
+    
+    // Revert on failure
+    request.stage_id = oldStageId;
+    request.stage_name = oldStage?.name;
+    renderKanbanBoard();
+    
+    showToast('Error', 'Failed to move request', 'error');
+  }
+}
+
+// Filter cards
+function filterCards() {
+  renderKanbanBoard();
+}
+
+// View request
+function viewRequest(id) {
+  window.location.href = `/requests/${id}`;
+}
+
+// Utilities
+function getInitials(name) {
+  if (!name) return '?';
+  return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+}
+
+function capitalizeFirst(str) {
+  if (!str) return '';
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return 'N/A';
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+// Toast helpers
+function showDragToast(message) {
+  const toast = document.getElementById('drag-toast');
+  toast.textContent = message;
+  toast.classList.add('visible');
+}
+
+function hideDragToast() {
+  const toast = document.getElementById('drag-toast');
+  toast.classList.remove('visible');
+}
+
+function showToast(title, message, type = 'info') {
+  // Check if global showToast exists
+  if (typeof window.showToast === 'function') {
+    window.showToast(title, message, type);
+  } else {
+    console.log(`[${type.toUpperCase()}] ${title}: ${message}`);
+  }
+}
+</script>
+{% endblock %}

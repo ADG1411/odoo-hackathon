@@ -192,6 +192,45 @@
     transform: translateX(2px);
   }
   
+  .calendar-event[draggable="true"] {
+    cursor: grab;
+  }
+  
+  .calendar-event[draggable="true"]:active {
+    cursor: grabbing;
+  }
+  
+  .calendar-event.dragging {
+    opacity: 0.5;
+  }
+  
+  /* Calendar drag & drop states */
+  .calendar-day.drag-over {
+    background: var(--primary-light) !important;
+    box-shadow: inset 0 0 0 2px var(--primary);
+  }
+  
+  .calendar-drag-toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text-primary);
+    color: white;
+    padding: 12px 24px;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  
+  .calendar-drag-toast.visible {
+    opacity: 1;
+  }
+  
   .calendar-event.priority-low {
     background: #f1f5f9;
     color: var(--text-secondary);
@@ -732,7 +771,13 @@ function renderCalendar() {
     dayEl.className = 'calendar-day';
     if (isOtherMonth) dayEl.classList.add('other-month');
     if (isToday) dayEl.classList.add('today');
+    dayEl.dataset.date = dateStr;
     dayEl.onclick = () => selectDate(date);
+    
+    // Add drop zone handlers for drag & drop
+    dayEl.ondragover = handleCalendarDragOver;
+    dayEl.ondragleave = handleCalendarDragLeave;
+    dayEl.ondrop = (e) => handleCalendarDrop(e, dateStr);
     
     dayEl.innerHTML = `
       <div class="day-header">
@@ -740,7 +785,12 @@ function renderCalendar() {
       </div>
       <div class="day-events">
         ${dayEvents.slice(0, 3).map(e => `
-          <div class="calendar-event priority-${e.priority}" onclick="event.stopPropagation(); viewEvent(${e.id})">
+          <div class="calendar-event priority-${e.priority}" 
+               draggable="true"
+               data-event-id="${e.id}"
+               ondragstart="handleEventDragStart(event, ${e.id})"
+               ondragend="handleEventDragEnd(event)"
+               onclick="event.stopPropagation(); viewEvent(${e.id})">
             ${e.title}
           </div>
         `).join('')}
@@ -1031,6 +1081,98 @@ function rescheduleEvent(id) {
 
 function reassignEvent(id) {
   showToast('Reassign', 'Opening technician selector...', 'info');
+}
+
+// ==========================================
+// Drag & Drop for Calendar Events
+// ==========================================
+let draggedEventId = null;
+let draggedEventElement = null;
+
+function handleEventDragStart(event, eventId) {
+  draggedEventId = eventId;
+  draggedEventElement = event.target;
+  event.target.classList.add('dragging');
+  event.dataTransfer.effectAllowed = 'move';
+  event.dataTransfer.setData('text/plain', eventId);
+  
+  // Show drag toast
+  showDragToast('Drag to a new date to reschedule');
+}
+
+function handleEventDragEnd(event) {
+  event.target.classList.remove('dragging');
+  draggedEventId = null;
+  draggedEventElement = null;
+  
+  // Remove all drag-over states
+  document.querySelectorAll('.calendar-day.drag-over').forEach(day => {
+    day.classList.remove('drag-over');
+  });
+  
+  // Hide drag toast
+  hideDragToast();
+}
+
+function handleCalendarDragOver(event) {
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'move';
+  event.currentTarget.classList.add('drag-over');
+}
+
+function handleCalendarDragLeave(event) {
+  event.currentTarget.classList.remove('drag-over');
+}
+
+async function handleCalendarDrop(event, dateStr) {
+  event.preventDefault();
+  event.currentTarget.classList.remove('drag-over');
+  
+  const eventId = parseInt(event.dataTransfer.getData('text/plain'));
+  if (!eventId || !dateStr) return;
+  
+  try {
+    const response = await fetch(`/api/requests/${eventId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        scheduled_date: dateStr
+      })
+    });
+    
+    if (response.ok) {
+      showToast('Success', 'Event rescheduled successfully', 'success');
+      // Refresh calendar to show updated event
+      loadEvents();
+    } else {
+      const error = await response.json();
+      showToast('Error', error.error || 'Failed to reschedule event', 'error');
+    }
+  } catch (error) {
+    console.error('Error rescheduling event:', error);
+    showToast('Error', 'Failed to reschedule event', 'error');
+  }
+}
+
+function showDragToast(message) {
+  let toast = document.getElementById('drag-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'drag-toast';
+    toast.className = 'calendar-drag-toast';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = message;
+  toast.classList.add('active');
+}
+
+function hideDragToast() {
+  const toast = document.getElementById('drag-toast');
+  if (toast) {
+    toast.classList.remove('active');
+  }
 }
 
 // Initialize on load
