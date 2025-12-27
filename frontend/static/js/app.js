@@ -18,6 +18,45 @@ async function handleLogout(event) {
   }
 }
 
+// ==================== SIDEBAR USER INFO ====================
+async function loadSidebarUserInfo() {
+  try {
+    const data = await GearGuardAPI.users.getCurrentUser();
+    const user = data?.user || data;
+    
+    if (user) {
+      // Get proper name
+      const userName = user.full_name || 
+        (user.first_name && user.last_name ? 
+          `${user.first_name} ${user.last_name}` : 
+          user.email?.split('@')[0] || 'User');
+      
+      // Get role name (handle role as object or string)
+      let roleName = 'User';
+      if (user.role) {
+        roleName = typeof user.role === 'object' ? user.role.name : user.role;
+      }
+      
+      // Get initials
+      const initials = userName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'U';
+      
+      // Update sidebar elements
+      const displayName = document.getElementById('user-display-name');
+      const displayRole = document.getElementById('user-display-role');
+      const userInitials = document.getElementById('user-initials');
+      
+      if (displayName) displayName.textContent = userName;
+      if (displayRole) displayRole.textContent = roleName;
+      if (userInitials) userInitials.textContent = initials;
+    }
+  } catch (error) {
+    console.error('Failed to load sidebar user info:', error);
+  }
+}
+
+// Load sidebar user info when DOM is ready
+document.addEventListener('DOMContentLoaded', loadSidebarUserInfo);
+
 // ==================== TOAST NOTIFICATIONS ====================
 function showToast(title, message, type = 'info') {
   const container = document.getElementById('toast-container');

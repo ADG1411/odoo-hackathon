@@ -675,15 +675,21 @@ async function loadProfile() {
 }
 
 function renderProfile() {
+  // Get proper name (full_name or first_name + last_name)
+  const userName = currentUser.full_name || 
+    (currentUser.first_name && currentUser.last_name ? 
+      `${currentUser.first_name} ${currentUser.last_name}` : 
+      currentUser.username || 'User');
+  
   // Set avatar initials
-  const initials = getInitials(currentUser.name || currentUser.username);
+  const initials = getInitials(userName);
   document.getElementById('profile-avatar').innerHTML = initials;
   
   // Set profile info
-  document.getElementById('profile-name').textContent = currentUser.name || currentUser.username || 'User';
+  document.getElementById('profile-name').textContent = userName;
   document.getElementById('profile-role').textContent = formatRole(currentUser.role);
   document.getElementById('profile-email').textContent = currentUser.email || '-';
-  document.getElementById('profile-username').textContent = currentUser.username || '-';
+  document.getElementById('profile-username').textContent = currentUser.username || currentUser.email?.split('@')[0] || '-';
   document.getElementById('profile-role-detail').textContent = formatRole(currentUser.role);
   document.getElementById('profile-joined').textContent = currentUser.created_at ? 
     formatDate(currentUser.created_at) : 'Recently';
@@ -697,11 +703,19 @@ function getInitials(name) {
 }
 
 function formatRole(role) {
+  // Handle role as object (from API) or string
+  if (role && typeof role === 'object') {
+    return role.name || 'User';
+  }
   const roles = {
     admin: 'Administrator',
+    Admin: 'Administrator',
     manager: 'Manager',
+    Manager: 'Manager',
     technician: 'Technician',
-    user: 'User'
+    Technician: 'Technician',
+    user: 'User',
+    User: 'User'
   };
   return roles[role] || role || 'User';
 }
