@@ -1,0 +1,582 @@
+{% extends "base.html" %}
+
+{% block title %}Maintenance History - GearGuard{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+  {% include "partials/sidebar.html" %}
+  
+  <main class="main-content">
+    <header class="page-header">
+      <div class="page-header-content">
+        <div class="page-title-section">
+          <nav class="page-breadcrumb">
+            <a href="/">Home</a>
+            <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i>
+            <span>History</span>
+          </nav>
+          <h1 class="page-title">Maintenance History</h1>
+        </div>
+        
+        <div class="page-actions">
+          <button class="btn btn-secondary" onclick="exportHistory()">
+            <i data-lucide="download" style="width: 18px; height: 18px;"></i>
+            Export
+          </button>
+        </div>
+      </div>
+    </header>
+    
+    <div class="page-body">
+      <div class="page-body-inner">
+        <!-- Filters Bar -->
+        <div class="filters-bar">
+          <div class="filter-group">
+            <div class="filter-item">
+              <label class="filter-label">Type</label>
+              <select class="filter-select" id="filter-type" onchange="applyFilters()">
+                <option value="">All Types</option>
+                <option value="preventive">Preventive</option>
+                <option value="corrective">Corrective</option>
+                <option value="predictive">Predictive</option>
+                <option value="emergency">Emergency</option>
+              </select>
+            </div>
+            <div class="filter-item">
+              <label class="filter-label">Status</label>
+              <select class="filter-select" id="filter-status" onchange="applyFilters()">
+                <option value="">All Status</option>
+                <option value="completed">Completed</option>
+                <option value="in-progress">In Progress</option>
+                <option value="pending">Pending</option>
+              </select>
+            </div>
+            <div class="filter-item">
+              <label class="filter-label">From Date</label>
+              <input type="date" class="filter-input" id="filter-date-from" onchange="applyFilters()">
+            </div>
+            <div class="filter-item">
+              <label class="filter-label">To Date</label>
+              <input type="date" class="filter-input" id="filter-date-to" onchange="applyFilters()">
+            </div>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="clearFilters()">
+            <i data-lucide="x" style="width: 14px; height: 14px;"></i>
+            Clear
+          </button>
+        </div>
+        
+        <!-- Summary Stats -->
+        <div class="history-stats">
+          <div class="stat-card">
+            <div class="stat-icon completed">
+              <i data-lucide="check-circle" style="width: 20px; height: 20px;"></i>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-completed">0</div>
+              <div class="stat-label">Completed</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon in-progress">
+              <i data-lucide="clock" style="width: 20px; height: 20px;"></i>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-in-progress">0</div>
+              <div class="stat-label">In Progress</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon total-hours">
+              <i data-lucide="timer" style="width: 20px; height: 20px;"></i>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-hours">0h</div>
+              <div class="stat-label">Total Hours</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon equipment">
+              <i data-lucide="box" style="width: 20px; height: 20px;"></i>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-equipment">0</div>
+              <div class="stat-label">Equipment Serviced</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Timeline View -->
+        <div class="history-container">
+          <div class="history-timeline" id="history-timeline">
+            <div class="loading-placeholder">
+              <i data-lucide="loader" class="spinning"></i>
+              <p>Loading history...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<style>
+.filters-bar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-lg);
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-lg);
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  gap: var(--space-lg);
+  flex-wrap: wrap;
+}
+
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.filter-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.filter-select, .filter-input {
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  background: var(--card-bg);
+  color: var(--text-primary);
+  min-width: 150px;
+}
+
+.filter-select:focus, .filter-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-bg);
+}
+
+.history-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-lg);
+  margin-bottom: var(--space-xl);
+}
+
+@media (max-width: 900px) {
+  .history-stats { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 500px) {
+  .history-stats { grid-template-columns: 1fr; }
+}
+
+.stat-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-icon.completed { background: var(--success-bg); color: var(--success); }
+.stat-icon.in-progress { background: var(--warning-bg); color: var(--warning); }
+.stat-icon.total-hours { background: var(--primary-bg); color: var(--primary); }
+.stat-icon.equipment { background: #f3e8ff; color: #7c3aed; }
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.stat-label {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.history-container {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+}
+
+.history-timeline {
+  position: relative;
+}
+
+.timeline-group {
+  margin-bottom: var(--space-xl);
+}
+
+.timeline-date {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-md);
+  padding-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.timeline-items {
+  position: relative;
+  padding-left: var(--space-xl);
+}
+
+.timeline-items::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--border-color);
+}
+
+.timeline-item {
+  position: relative;
+  padding: var(--space-md);
+  margin-bottom: var(--space-md);
+  background: var(--muted-bg);
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+}
+
+.timeline-item:hover {
+  background: var(--border-color);
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: calc(-1 * var(--space-xl) + 4px);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--primary);
+  border: 2px solid var(--card-bg);
+}
+
+.timeline-item.completed::before { background: var(--success); }
+.timeline-item.in-progress::before { background: var(--warning); }
+.timeline-item.pending::before { background: var(--text-muted); }
+
+.timeline-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-bottom: var(--space-sm);
+}
+
+.timeline-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.timeline-badges {
+  display: flex;
+  gap: var(--space-xs);
+}
+
+.badge {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.badge-priority-high { background: var(--danger-bg); color: var(--danger); }
+.badge-priority-medium { background: var(--warning-bg); color: var(--warning); }
+.badge-priority-low { background: var(--success-bg); color: var(--success); }
+
+.badge-type { background: var(--primary-bg); color: var(--primary); }
+.badge-status-completed { background: var(--success-bg); color: var(--success); }
+.badge-status-in-progress { background: var(--warning-bg); color: var(--warning); }
+.badge-status-pending { background: var(--muted-bg); color: var(--text-muted); }
+
+.timeline-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.timeline-meta-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.timeline-actions {
+  margin-top: var(--space-sm);
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--border-color);
+}
+
+.loading-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px;
+  color: var(--text-muted);
+  gap: var(--space-md);
+}
+
+.spinning { animation: spin 1s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+.empty-state {
+  text-align: center;
+  padding: 60px;
+  color: var(--text-muted);
+}
+
+.empty-state i {
+  margin-bottom: var(--space-md);
+  opacity: 0.5;
+}
+</style>
+
+<script>
+let allRequests = [];
+let filteredRequests = [];
+
+document.addEventListener('DOMContentLoaded', loadHistory);
+
+async function loadHistory() {
+  try {
+    const data = await GearGuardAPI.requests.getAll();
+    allRequests = data.requests || data || [];
+    
+    // Sort by date (most recent first)
+    allRequests.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+    
+    filteredRequests = [...allRequests];
+    updateStats();
+    renderTimeline();
+  } catch (error) {
+    console.error('Failed to load history:', error);
+    document.getElementById('history-timeline').innerHTML = `
+      <div class="empty-state">
+        <i data-lucide="alert-circle" style="width: 48px; height: 48px;"></i>
+        <p>Failed to load history</p>
+      </div>
+    `;
+    lucide.createIcons();
+  }
+}
+
+function updateStats() {
+  const completed = filteredRequests.filter(r => r.stage?.name === 'Done').length;
+  const inProgress = filteredRequests.filter(r => r.stage?.name !== 'Done' && r.stage?.name !== 'New').length;
+  const totalHours = filteredRequests.reduce((sum, r) => sum + (r.duration || 0), 0);
+  const uniqueEquipment = new Set(filteredRequests.filter(r => r.equipment_id).map(r => r.equipment_id)).size;
+  
+  document.getElementById('stat-completed').textContent = completed;
+  document.getElementById('stat-in-progress').textContent = inProgress;
+  document.getElementById('stat-hours').textContent = totalHours + 'h';
+  document.getElementById('stat-equipment').textContent = uniqueEquipment;
+}
+
+function renderTimeline() {
+  const timeline = document.getElementById('history-timeline');
+  
+  if (filteredRequests.length === 0) {
+    timeline.innerHTML = `
+      <div class="empty-state">
+        <i data-lucide="history" style="width: 48px; height: 48px;"></i>
+        <p>No maintenance history found</p>
+      </div>
+    `;
+    lucide.createIcons();
+    return;
+  }
+  
+  // Group by date
+  const groupedByDate = {};
+  filteredRequests.forEach(req => {
+    const date = req.created_at ? new Date(req.created_at).toDateString() : 'Unknown Date';
+    if (!groupedByDate[date]) groupedByDate[date] = [];
+    groupedByDate[date].push(req);
+  });
+  
+  let html = '';
+  Object.entries(groupedByDate).forEach(([date, requests]) => {
+    const formattedDate = date !== 'Unknown Date' ? 
+      new Date(date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : 
+      date;
+    
+    html += `
+      <div class="timeline-group">
+        <div class="timeline-date">
+          <i data-lucide="calendar" style="width: 16px; height: 16px;"></i>
+          ${formattedDate}
+        </div>
+        <div class="timeline-items">
+          ${requests.map(req => renderTimelineItem(req)).join('')}
+        </div>
+      </div>
+    `;
+  });
+  
+  timeline.innerHTML = html;
+  lucide.createIcons();
+}
+
+function renderTimelineItem(req) {
+  const statusClass = req.stage?.name === 'Done' ? 'completed' : 
+                      (req.stage?.name === 'New' ? 'pending' : 'in-progress');
+  const statusLabel = req.stage?.name === 'Done' ? 'Completed' : 
+                      (req.stage?.name === 'New' ? 'Pending' : 'In Progress');
+  
+  return `
+    <div class="timeline-item ${statusClass}">
+      <div class="timeline-header">
+        <div class="timeline-title">${req.name || 'Maintenance Request'}</div>
+        <div class="timeline-badges">
+          <span class="badge badge-priority-${req.priority || 'medium'}">${(req.priority || 'medium').toUpperCase()}</span>
+          <span class="badge badge-type">${formatType(req.maintenance_type)}</span>
+          <span class="badge badge-status-${statusClass}">${statusLabel}</span>
+        </div>
+      </div>
+      <div class="timeline-meta">
+        <span class="timeline-meta-item">
+          <i data-lucide="box" style="width: 14px; height: 14px;"></i>
+          ${req.equipment?.name || 'No equipment'}
+        </span>
+        <span class="timeline-meta-item">
+          <i data-lucide="users" style="width: 14px; height: 14px;"></i>
+          ${req.team?.name || 'Unassigned'}
+        </span>
+        <span class="timeline-meta-item">
+          <i data-lucide="clock" style="width: 14px; height: 14px;"></i>
+          ${req.duration || 0} hours
+        </span>
+        ${req.requester_name ? `
+          <span class="timeline-meta-item">
+            <i data-lucide="user" style="width: 14px; height: 14px;"></i>
+            ${req.requester_name}
+          </span>
+        ` : ''}
+      </div>
+      <div class="timeline-actions">
+        <a href="/requests/${req.id}" class="btn btn-secondary btn-sm">
+          <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
+          View Details
+        </a>
+      </div>
+    </div>
+  `;
+}
+
+function formatType(type) {
+  const types = { preventive: 'Preventive', corrective: 'Corrective', predictive: 'Predictive', emergency: 'Emergency' };
+  return types[type] || type || 'Unknown';
+}
+
+function applyFilters() {
+  const typeFilter = document.getElementById('filter-type').value;
+  const statusFilter = document.getElementById('filter-status').value;
+  const dateFrom = document.getElementById('filter-date-from').value;
+  const dateTo = document.getElementById('filter-date-to').value;
+  
+  filteredRequests = allRequests.filter(req => {
+    // Type filter
+    if (typeFilter && req.maintenance_type !== typeFilter) return false;
+    
+    // Status filter
+    if (statusFilter) {
+      const isCompleted = req.stage?.name === 'Done';
+      const isPending = req.stage?.name === 'New';
+      if (statusFilter === 'completed' && !isCompleted) return false;
+      if (statusFilter === 'pending' && !isPending) return false;
+      if (statusFilter === 'in-progress' && (isCompleted || isPending)) return false;
+    }
+    
+    // Date filters
+    if (dateFrom && req.created_at) {
+      if (new Date(req.created_at) < new Date(dateFrom)) return false;
+    }
+    if (dateTo && req.created_at) {
+      if (new Date(req.created_at) > new Date(dateTo + 'T23:59:59')) return false;
+    }
+    
+    return true;
+  });
+  
+  updateStats();
+  renderTimeline();
+}
+
+function exportHistory() {
+  const data = {
+    exported_at: new Date().toISOString(),
+    total_records: filteredRequests.length,
+    history: filteredRequests.map(req => ({
+      id: req.id,
+      name: req.name,
+      equipment: req.equipment?.name,
+      type: req.maintenance_type,
+      priority: req.priority,
+      status: req.stage?.name,
+      team: req.team?.name,
+      requester: req.requester_name,
+      duration_hours: req.duration,
+      created_at: req.created_at,
+      scheduled_date: req.scheduled_date
+    }))
+  };
+  
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `maintenance-history-${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function clearFilters() {
+  document.getElementById('filter-type').value = '';
+  document.getElementById('filter-status').value = '';
+  document.getElementById('filter-date-from').value = '';
+  document.getElementById('filter-date-to').value = '';
+  applyFilters();
+}
+</script>
+{% endblock %}

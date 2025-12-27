@@ -85,6 +85,12 @@ def reports():
     return render_template('reports.html')
 
 
+@views.route('/history')
+def history():
+    """Maintenance history page"""
+    return render_template('history.html')
+
+
 @views.route('/settings')
 def settings():
     """Settings page"""
