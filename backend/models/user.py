@@ -139,7 +139,7 @@ class User(db.Model):
     last_login = db.Column(db.DateTime)
     
     # Relationships
-    maintenance_team = db.relationship('MaintenanceTeam', backref='users')
+    team = db.relationship('MaintenanceTeam', foreign_keys=[team_id], backref='team_users')
     
     @property
     def full_name(self):

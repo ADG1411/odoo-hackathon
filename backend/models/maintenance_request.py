@@ -78,16 +78,16 @@ class MaintenanceRequest(db.Model):
     @property
     def priority_icon(self):
         icons = {
-            'low': 'bi-arrow-down',
-            'normal': 'bi-dash',
-            'high': 'bi-arrow-up',
-            'urgent': 'bi-exclamation-triangle-fill'
+            'low': 'arrow-down',
+            'normal': 'minus',
+            'high': 'arrow-up',
+            'urgent': 'exclamation-triangle'
         }
-        return icons.get(self.priority, 'bi-dash')
+        return icons.get(self.priority, 'minus')
     
     @property
     def type_icon(self):
-        return 'bi-wrench' if self.request_type == 'corrective' else 'bi-calendar-check'
+        return 'wrench' if self.request_type == 'corrective' else 'calendar-check'
     
     def to_dict(self):
         return {

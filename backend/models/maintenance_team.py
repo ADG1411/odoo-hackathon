@@ -30,6 +30,7 @@ class MaintenanceTeam(db.Model):
     # Relationships
     members = db.relationship('TeamMember', backref='team', lazy='dynamic', cascade='all, delete-orphan')
     maintenance_requests = db.relationship('MaintenanceRequest', backref='team', lazy='dynamic')
+    equipment = db.relationship('Equipment', foreign_keys='Equipment.default_team_id', backref='assigned_team', lazy='dynamic', viewonly=True)
     
     @property
     def member_count(self):
