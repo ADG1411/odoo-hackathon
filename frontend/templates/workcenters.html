@@ -1,0 +1,1513 @@
+{% extends "base.html" %}
+
+{% block title %}Work Center Selection - GearGuard{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ================================================
+     WORK CENTER SELECTION - Next-Gen Industrial SaaS
+     Ultra-Modern, Premium, 2025-Ready Design
+     ================================================ */
+  
+  /* Split Layout */
+  .split-layout {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 0;
+    min-height: calc(100vh - 64px);
+  }
+  
+  /* Left Content Area */
+  .left-content {
+    padding: var(--space-2xl);
+    overflow-y: auto;
+    max-height: calc(100vh - 64px);
+  }
+  
+  /* Right Context Panel */
+  .context-panel {
+    background: var(--bg-card);
+    border-left: 1px solid var(--border-light);
+    padding: var(--space-xl);
+    position: sticky;
+    top: 0;
+    height: calc(100vh - 64px);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  
+  /* Page Header */
+  .wc-page-header {
+    margin-bottom: var(--space-xl);
+  }
+  
+  .wc-page-title {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: var(--space-xs);
+    letter-spacing: -0.02em;
+  }
+  
+  .wc-page-subtitle {
+    font-size: 1rem;
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+  
+  /* Control Bar */
+  .control-bar {
+    background: var(--bg-card);
+    border-radius: var(--radius-xl);
+    padding: var(--space-lg);
+    box-shadow: var(--shadow-card);
+    margin-bottom: var(--space-xl);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  
+  .control-bar-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+  }
+  
+  .search-wrapper {
+    position: relative;
+    flex: 1;
+    min-width: 280px;
+  }
+  
+  .search-wrapper i {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    width: 20px;
+    height: 20px;
+  }
+  
+  .search-wrapper input {
+    width: 100%;
+    padding: 14px 16px 14px 52px;
+    background: var(--bg-body);
+    border: 1.5px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    font-size: 0.9375rem;
+    transition: all var(--transition-fast);
+  }
+  
+  .search-wrapper input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-light);
+    outline: none;
+    background: var(--bg-card);
+  }
+  
+  .search-wrapper input::placeholder {
+    color: var(--text-muted);
+  }
+  
+  /* Filter Pills */
+  .filter-pills {
+    display: flex;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+  }
+  
+  .filter-pill {
+    padding: 10px 18px;
+    background: var(--bg-body);
+    border: 1.5px solid var(--border-light);
+    border-radius: var(--radius-full);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+  }
+  
+  .filter-pill:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+  
+  .filter-pill.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+  }
+  
+  .filter-pill i {
+    width: 14px;
+    height: 14px;
+  }
+  
+  /* Sort Dropdown */
+  .sort-dropdown {
+    position: relative;
+  }
+  
+  .sort-btn {
+    padding: 10px 16px;
+    background: var(--bg-body);
+    border: 1.5px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    transition: all var(--transition-fast);
+  }
+  
+  .sort-btn:hover {
+    border-color: var(--border-medium);
+  }
+  
+  .sort-btn i {
+    width: 16px;
+    height: 16px;
+  }
+  
+  /* Work Center Grid */
+  .wc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: var(--space-lg);
+  }
+  
+  /* Work Center Card */
+  .wc-card {
+    background: var(--bg-card);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-card);
+    transition: all var(--transition-normal);
+    border: 2px solid transparent;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+  }
+  
+  .wc-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-card-hover);
+  }
+  
+  .wc-card.selected {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-light), var(--shadow-card-hover);
+  }
+  
+  .wc-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary), #8b5cf6);
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+  }
+  
+  .wc-card:hover::before,
+  .wc-card.selected::before {
+    opacity: 1;
+  }
+  
+  .wc-card-main {
+    padding: var(--space-xl);
+  }
+  
+  /* Card Header */
+  .wc-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--space-lg);
+  }
+  
+  .wc-card-info {
+    flex: 1;
+  }
+  
+  .wc-card-name {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+  
+  .wc-card-code {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-weight: 500;
+  }
+  
+  /* Status Indicator */
+  .wc-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+  
+  .wc-status .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-full);
+    animation: pulse 2s infinite;
+  }
+  
+  .wc-status.active {
+    background: #ecfdf5;
+    color: #059669;
+  }
+  
+  .wc-status.active .status-dot {
+    background: #10b981;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
+  }
+  
+  .wc-status.warning {
+    background: #fef3c7;
+    color: #b45309;
+  }
+  
+  .wc-status.warning .status-dot {
+    background: #f59e0b;
+    animation: pulse-warning 1.5s infinite;
+  }
+  
+  .wc-status.down {
+    background: #fee2e2;
+    color: #dc2626;
+  }
+  
+  .wc-status.down .status-dot {
+    background: #ef4444;
+    animation: pulse-danger 1s infinite;
+  }
+  
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.15); }
+  }
+  
+  @keyframes pulse-warning {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+  
+  @keyframes pulse-danger {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.2); }
+  }
+  
+  /* OEE Display */
+  .wc-oee-section {
+    margin-bottom: var(--space-lg);
+  }
+  
+  .wc-oee-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: var(--space-sm);
+  }
+  
+  .wc-oee-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+  }
+  
+  .wc-oee-value {
+    font-size: 2.25rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  
+  .wc-oee-value.excellent { color: #059669; }
+  .wc-oee-value.good { color: #10b981; }
+  .wc-oee-value.average { color: #f59e0b; }
+  .wc-oee-value.poor { color: #ef4444; }
+  
+  .wc-oee-bar {
+    height: 6px;
+    background: var(--bg-hover);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+  }
+  
+  .wc-oee-fill {
+    height: 100%;
+    border-radius: var(--radius-full);
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .wc-oee-fill.excellent { background: linear-gradient(90deg, #059669, #10b981); }
+  .wc-oee-fill.good { background: linear-gradient(90deg, #10b981, #34d399); }
+  .wc-oee-fill.average { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+  .wc-oee-fill.poor { background: linear-gradient(90deg, #ef4444, #f87171); }
+  
+  /* Metrics Grid */
+  .wc-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+  }
+  
+  .wc-metric {
+    text-align: center;
+    padding: var(--space-md);
+    background: var(--bg-body);
+    border-radius: var(--radius-md);
+  }
+  
+  .wc-metric-value {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+  }
+  
+  .wc-metric-label {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+  }
+  
+  /* Tags */
+  .wc-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    margin-bottom: var(--space-lg);
+  }
+  
+  .wc-tag {
+    padding: 4px 10px;
+    background: var(--bg-hover);
+    border-radius: var(--radius-full);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+  
+  .wc-tag.recommended {
+    background: linear-gradient(135deg, #dbeafe, #e0e7ff);
+    color: #4f46e5;
+  }
+  
+  /* AI Hint */
+  .ai-hint {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    background: linear-gradient(135deg, #faf5ff, #f3e8ff);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-lg);
+  }
+  
+  .ai-hint i {
+    width: 16px;
+    height: 16px;
+    color: #9333ea;
+  }
+  
+  .ai-hint-text {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #7c3aed;
+  }
+  
+  /* Alternatives Section */
+  .wc-alternatives {
+    border-top: 1px solid var(--border-light);
+    margin-top: auto;
+  }
+  
+  .wc-alternatives-toggle {
+    width: 100%;
+    padding: var(--space-md) var(--space-xl);
+    background: var(--bg-hover);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    transition: all var(--transition-fast);
+  }
+  
+  .wc-alternatives-toggle:hover {
+    background: var(--bg-active);
+  }
+  
+  .wc-alternatives-toggle i {
+    width: 16px;
+    height: 16px;
+    transition: transform var(--transition-fast);
+  }
+  
+  .wc-alternatives-toggle.expanded i {
+    transform: rotate(180deg);
+  }
+  
+  .wc-alternatives-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+  }
+  
+  .wc-alternatives-content.expanded {
+    max-height: 300px;
+  }
+  
+  .wc-alternative-item {
+    padding: var(--space-md) var(--space-xl);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid var(--border-light);
+    background: var(--bg-body);
+  }
+  
+  .wc-alt-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  .wc-alt-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  
+  .wc-alt-code {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+  }
+  
+  .wc-alt-comparison {
+    display: flex;
+    gap: var(--space-md);
+  }
+  
+  .wc-alt-metric {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  
+  .wc-alt-metric.better { color: #059669; }
+  .wc-alt-metric.worse { color: #ef4444; }
+  .wc-alt-metric.neutral { color: var(--text-muted); }
+  
+  .wc-alt-metric i {
+    width: 12px;
+    height: 12px;
+  }
+  
+  /* Card Actions */
+  .wc-card-actions {
+    display: flex;
+    gap: var(--space-sm);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--border-light);
+  }
+  
+  .wc-action-btn {
+    flex: 1;
+    padding: 12px 16px;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+  }
+  
+  .wc-action-btn i {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .wc-action-btn.primary {
+    background: var(--primary);
+    color: white;
+    border: none;
+  }
+  
+  .wc-action-btn.primary:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+  }
+  
+  .wc-action-btn.secondary {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1.5px solid var(--border-light);
+  }
+  
+  .wc-action-btn.secondary:hover {
+    border-color: var(--border-medium);
+    background: var(--bg-hover);
+  }
+  
+  /* ==================== RIGHT CONTEXT PANEL ==================== */
+  
+  .context-panel-header {
+    margin-bottom: var(--space-xl);
+  }
+  
+  .context-panel-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-xs);
+  }
+  
+  .context-panel-subtitle {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+  }
+  
+  /* Request Type Selector */
+  .request-type-section {
+    margin-bottom: var(--space-xl);
+  }
+  
+  .section-label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: var(--space-md);
+  }
+  
+  .request-type-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-sm);
+  }
+  
+  .request-type-card {
+    padding: var(--space-md);
+    background: var(--bg-body);
+    border: 2px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-align: center;
+  }
+  
+  .request-type-card:hover {
+    border-color: var(--border-medium);
+    background: var(--bg-hover);
+  }
+  
+  .request-type-card.selected {
+    border-color: var(--primary);
+    background: var(--primary-light);
+  }
+  
+  .request-type-icon {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto var(--space-sm);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    transition: all var(--transition-fast);
+  }
+  
+  .request-type-card.selected .request-type-icon {
+    background: var(--primary);
+    color: white;
+  }
+  
+  .request-type-icon i {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .request-type-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  
+  .request-type-card.selected .request-type-label {
+    color: var(--primary-dark);
+  }
+  
+  /* Reason Input */
+  .reason-section {
+    margin-bottom: var(--space-xl);
+  }
+  
+  .reason-input {
+    width: 100%;
+    padding: 14px 16px;
+    background: var(--bg-body);
+    border: 1.5px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    font-size: 0.875rem;
+    font-family: var(--font-sans);
+    resize: none;
+    transition: all var(--transition-fast);
+  }
+  
+  .reason-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-light);
+    outline: none;
+    background: var(--bg-card);
+  }
+  
+  .reason-input::placeholder {
+    color: var(--text-muted);
+  }
+  
+  /* Live Preview */
+  .preview-section {
+    margin-bottom: var(--space-xl);
+    flex: 1;
+  }
+  
+  .preview-card {
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    border: 1px dashed var(--border-medium);
+  }
+  
+  .preview-card.ready {
+    background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+    border-color: #10b981;
+    border-style: solid;
+  }
+  
+  .preview-label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: var(--space-sm);
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+  }
+  
+  .preview-card.ready .preview-label {
+    color: #059669;
+  }
+  
+  .preview-label i {
+    width: 12px;
+    height: 12px;
+  }
+  
+  .preview-text {
+    font-size: 0.9375rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+  
+  .preview-card.ready .preview-text {
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+  
+  .preview-highlight {
+    font-weight: 700;
+    color: var(--primary);
+  }
+  
+  /* Primary CTA */
+  .cta-section {
+    margin-top: auto;
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--border-light);
+  }
+  
+  .cta-btn {
+    width: 100%;
+    padding: 16px 24px;
+    background: var(--bg-active);
+    color: var(--text-muted);
+    border: none;
+    border-radius: var(--radius-lg);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    cursor: not-allowed;
+    transition: all var(--transition-normal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+  }
+  
+  .cta-btn i {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .cta-btn.active {
+    background: linear-gradient(135deg, var(--primary), #8b5cf6);
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 4px 14px -3px rgba(99, 102, 241, 0.4);
+  }
+  
+  .cta-btn.active:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px -4px rgba(99, 102, 241, 0.5);
+  }
+  
+  /* Selection Check */
+  .selection-check {
+    position: absolute;
+    top: var(--space-md);
+    right: var(--space-md);
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-full);
+    background: var(--primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all var(--transition-fast);
+  }
+  
+  .wc-card.selected .selection-check {
+    opacity: 1;
+    transform: scale(1);
+  }
+  
+  .selection-check i {
+    width: 16px;
+    height: 16px;
+  }
+  
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: var(--space-2xl);
+    background: var(--bg-card);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-card);
+  }
+  
+  .empty-state-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto var(--space-lg);
+    background: var(--bg-hover);
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+  }
+  
+  .empty-state-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: var(--space-sm);
+  }
+  
+  .empty-state-desc {
+    color: var(--text-muted);
+    max-width: 360px;
+    margin: 0 auto;
+  }
+  
+  /* Skeleton Loading */
+  .skeleton {
+    background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: var(--radius-md);
+  }
+  
+  @keyframes skeleton-loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 1200px) {
+    .split-layout {
+      grid-template-columns: 1fr 320px;
+    }
+  }
+  
+  @media (max-width: 1024px) {
+    .split-layout {
+      grid-template-columns: 1fr;
+    }
+    
+    .context-panel {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: auto;
+      max-height: 50vh;
+      border-left: none;
+      border-top: 1px solid var(--border-light);
+      border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+      box-shadow: 0 -10px 40px -10px rgba(0, 0, 0, 0.15);
+      z-index: 100;
+      transform: translateY(calc(100% - 72px));
+      transition: transform var(--transition-normal);
+    }
+    
+    .context-panel.expanded {
+      transform: translateY(0);
+    }
+    
+    .context-panel-handle {
+      display: flex;
+    }
+    
+    .left-content {
+      padding-bottom: 100px;
+      max-height: none;
+    }
+    
+    .wc-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  @media (max-width: 640px) {
+    .left-content {
+      padding: var(--space-lg);
+    }
+    
+    .control-bar-row {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    
+    .search-wrapper {
+      min-width: 100%;
+    }
+    
+    .filter-pills {
+      overflow-x: auto;
+      flex-wrap: nowrap;
+      padding-bottom: var(--space-sm);
+    }
+    
+    .filter-pill {
+      flex-shrink: 0;
+    }
+  }
+  
+  /* Panel Handle (Mobile) */
+  .context-panel-handle {
+    display: none;
+    width: 40px;
+    height: 4px;
+    background: var(--border-medium);
+    border-radius: var(--radius-full);
+    margin: 0 auto var(--space-md);
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+  {% include "partials/sidebar.html" %}
+  
+  <main class="main-content" style="padding: 0;">
+    <div class="split-layout">
+      <!-- Left Content: Work Center Selection -->
+      <div class="left-content">
+        <div class="wc-page-header">
+          <h1 class="wc-page-title">Select Work Center</h1>
+          <p class="wc-page-subtitle">Choose where you want to take action</p>
+        </div>
+        
+        <!-- Control Bar -->
+        <div class="control-bar">
+          <div class="control-bar-row">
+            <div class="search-wrapper">
+              <i data-lucide="search"></i>
+              <input type="text" id="wc-search" placeholder="Search by name or code..." oninput="handleSearch()">
+            </div>
+            
+            <div class="filter-pills">
+              <button class="filter-pill" data-filter="high-oee" onclick="toggleFilter(this)">
+                <i data-lucide="trending-up"></i>
+                High OEE
+              </button>
+              <button class="filter-pill" data-filter="attention" onclick="toggleFilter(this)">
+                <i data-lucide="alert-circle"></i>
+                Needs Attention
+              </button>
+              <button class="filter-pill" data-filter="alternatives" onclick="toggleFilter(this)">
+                <i data-lucide="git-branch"></i>
+                Has Alternatives
+              </button>
+            </div>
+            
+            <div class="sort-dropdown">
+              <button class="sort-btn" onclick="toggleSortMenu()">
+                <i data-lucide="arrow-up-down"></i>
+                <span id="sort-label">Best OEE</span>
+                <i data-lucide="chevron-down"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Work Center Grid -->
+        <div class="wc-grid" id="wc-grid">
+          <!-- Cards will be rendered here -->
+        </div>
+      </div>
+      
+      <!-- Right Context Panel -->
+      <div class="context-panel" id="context-panel">
+        <div class="context-panel-handle" onclick="toggleContextPanel()"></div>
+        
+        <div class="context-panel-header">
+          <h2 class="context-panel-title">Request Details</h2>
+          <p class="context-panel-subtitle">Define your action parameters</p>
+        </div>
+        
+        <!-- Request Type Selection -->
+        <div class="request-type-section">
+          <div class="section-label">Request Type</div>
+          <div class="request-type-grid">
+            <div class="request-type-card" data-type="fix" onclick="selectRequestType('fix')">
+              <div class="request-type-icon">
+                <i data-lucide="wrench"></i>
+              </div>
+              <div class="request-type-label">Fix Issue</div>
+            </div>
+            <div class="request-type-card" data-type="oee" onclick="selectRequestType('oee')">
+              <div class="request-type-icon">
+                <i data-lucide="bar-chart-3"></i>
+              </div>
+              <div class="request-type-label">OEE Analysis</div>
+            </div>
+            <div class="request-type-card" data-type="maintenance" onclick="selectRequestType('maintenance')">
+              <div class="request-type-icon">
+                <i data-lucide="settings"></i>
+              </div>
+              <div class="request-type-label">Maintenance</div>
+            </div>
+            <div class="request-type-card" data-type="optimization" onclick="selectRequestType('optimization')">
+              <div class="request-type-icon">
+                <i data-lucide="zap"></i>
+              </div>
+              <div class="request-type-label">Optimization</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Optional Reason -->
+        <div class="reason-section">
+          <div class="section-label">Reason (Optional)</div>
+          <textarea class="reason-input" id="reason-input" rows="2" placeholder="e.g., Unexpected downtime, Performance drop..." oninput="updatePreview()"></textarea>
+        </div>
+        
+        <!-- Live Preview -->
+        <div class="preview-section">
+          <div class="preview-card" id="preview-card">
+            <div class="preview-label">
+              <i data-lucide="eye"></i>
+              Live Preview
+            </div>
+            <p class="preview-text" id="preview-text">
+              Select a request type and work center to see your request summary
+            </p>
+          </div>
+        </div>
+        
+        <!-- Primary CTA -->
+        <div class="cta-section">
+          <button class="cta-btn" id="continue-btn" onclick="continueWithRequest()">
+            <span>Continue with this Request</span>
+            <i data-lucide="arrow-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// State
+let selectedWorkCenter = null;
+let selectedRequestType = null;
+let activeFilters = [];
+let sortBy = 'oee';
+
+// Mock Work Center Data
+const workCenters = [
+  {
+    id: 1,
+    name: 'Assembly Line Alpha',
+    code: 'WC-101',
+    status: 'active',
+    oee: 94.5,
+    timeRequired: 2.5,
+    costPerHour: 85,
+    efficiency: 97,
+    tags: ['High Volume', 'Automated'],
+    recommended: true,
+    aiHint: 'Recommended for fastest recovery',
+    alternatives: [
+      { id: 5, name: 'Assembly Line Beta', code: 'WC-102', oee: 89, cost: '+12%', time: '-15%' },
+      { id: 6, name: 'Assembly Line Gamma', code: 'WC-103', oee: 91, cost: '+8%', time: '+5%' }
+    ]
+  },
+  {
+    id: 2,
+    name: 'CNC Machining Center',
+    code: 'WC-201',
+    status: 'warning',
+    oee: 78.2,
+    timeRequired: 4.0,
+    costPerHour: 120,
+    efficiency: 82,
+    tags: ['Precision', 'Metal Work'],
+    recommended: false,
+    aiHint: null,
+    alternatives: [
+      { id: 7, name: 'CNC Station B', code: 'WC-202', oee: 85, cost: '-5%', time: '+10%' }
+    ]
+  },
+  {
+    id: 3,
+    name: 'Welding Station Prime',
+    code: 'WC-301',
+    status: 'active',
+    oee: 88.7,
+    timeRequired: 1.5,
+    costPerHour: 95,
+    efficiency: 91,
+    tags: ['Certified', 'Heavy Duty'],
+    recommended: false,
+    aiHint: null,
+    alternatives: []
+  },
+  {
+    id: 4,
+    name: 'Paint & Coating Bay',
+    code: 'WC-401',
+    status: 'down',
+    oee: 45.3,
+    timeRequired: 3.0,
+    costPerHour: 75,
+    efficiency: 52,
+    tags: ['Environmental Control'],
+    recommended: false,
+    aiHint: null,
+    alternatives: [
+      { id: 8, name: 'Paint Bay Secondary', code: 'WC-402', oee: 82, cost: '+18%', time: '+25%' }
+    ]
+  },
+  {
+    id: 5,
+    name: 'Quality Inspection Hub',
+    code: 'WC-501',
+    status: 'active',
+    oee: 96.1,
+    timeRequired: 0.5,
+    costPerHour: 60,
+    efficiency: 98,
+    tags: ['QA', 'Final Check'],
+    recommended: true,
+    aiHint: 'Best-in-class efficiency',
+    alternatives: []
+  },
+  {
+    id: 6,
+    name: 'Packaging & Dispatch',
+    code: 'WC-601',
+    status: 'active',
+    oee: 91.4,
+    timeRequired: 1.0,
+    costPerHour: 45,
+    efficiency: 94,
+    tags: ['High Throughput', 'Automated'],
+    recommended: false,
+    aiHint: null,
+    alternatives: [
+      { id: 9, name: 'Packaging Line B', code: 'WC-602', oee: 88, cost: '-10%', time: '+5%' }
+    ]
+  }
+];
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+  renderWorkCenters();
+  updatePreview();
+});
+
+// Render Work Centers
+function renderWorkCenters() {
+  const grid = document.getElementById('wc-grid');
+  const search = document.getElementById('wc-search').value.toLowerCase();
+  
+  let filtered = workCenters.filter(wc => {
+    const matchesSearch = wc.name.toLowerCase().includes(search) || 
+                          wc.code.toLowerCase().includes(search);
+    
+    if (!matchesSearch) return false;
+    
+    if (activeFilters.includes('high-oee') && wc.oee < 85) return false;
+    if (activeFilters.includes('attention') && wc.status !== 'warning' && wc.status !== 'down') return false;
+    if (activeFilters.includes('alternatives') && wc.alternatives.length === 0) return false;
+    
+    return true;
+  });
+  
+  // Sort
+  filtered.sort((a, b) => {
+    switch(sortBy) {
+      case 'oee': return b.oee - a.oee;
+      case 'cost': return a.costPerHour - b.costPerHour;
+      case 'time': return a.timeRequired - b.timeRequired;
+      default: return 0;
+    }
+  });
+  
+  grid.innerHTML = filtered.map(wc => createWorkCenterCard(wc)).join('');
+  lucide.createIcons();
+}
+
+// Create Work Center Card
+function createWorkCenterCard(wc) {
+  const oeeClass = wc.oee >= 90 ? 'excellent' : wc.oee >= 80 ? 'good' : wc.oee >= 60 ? 'average' : 'poor';
+  const isSelected = selectedWorkCenter && selectedWorkCenter.id === wc.id;
+  
+  return `
+    <div class="wc-card ${isSelected ? 'selected' : ''}" onclick="selectWorkCenter(${wc.id})">
+      <div class="selection-check">
+        <i data-lucide="check"></i>
+      </div>
+      
+      <div class="wc-card-main">
+        <div class="wc-card-header">
+          <div class="wc-card-info">
+            <div class="wc-card-name">
+              ${wc.name}
+            </div>
+            <div class="wc-card-code">${wc.code}</div>
+          </div>
+          <div class="wc-status ${wc.status}">
+            <span class="status-dot"></span>
+            ${wc.status === 'active' ? 'Active' : wc.status === 'warning' ? 'Warning' : 'Down'}
+          </div>
+        </div>
+        
+        ${wc.aiHint ? `
+          <div class="ai-hint">
+            <i data-lucide="sparkles"></i>
+            <span class="ai-hint-text">${wc.aiHint}</span>
+          </div>
+        ` : ''}
+        
+        <div class="wc-oee-section">
+          <div class="wc-oee-header">
+            <span class="wc-oee-label">Overall Equipment Effectiveness</span>
+            <span class="wc-oee-value ${oeeClass}">${wc.oee}%</span>
+          </div>
+          <div class="wc-oee-bar">
+            <div class="wc-oee-fill ${oeeClass}" style="width: ${wc.oee}%"></div>
+          </div>
+        </div>
+        
+        <div class="wc-metrics">
+          <div class="wc-metric">
+            <div class="wc-metric-value">${wc.timeRequired}h</div>
+            <div class="wc-metric-label">Time Req.</div>
+          </div>
+          <div class="wc-metric">
+            <div class="wc-metric-value">$${wc.costPerHour}</div>
+            <div class="wc-metric-label">Cost/Hour</div>
+          </div>
+          <div class="wc-metric">
+            <div class="wc-metric-value">${wc.efficiency}%</div>
+            <div class="wc-metric-label">Efficiency</div>
+          </div>
+        </div>
+        
+        <div class="wc-tags">
+          ${wc.recommended ? '<span class="wc-tag recommended">★ Recommended</span>' : ''}
+          ${wc.tags.map(tag => `<span class="wc-tag">${tag}</span>`).join('')}
+        </div>
+        
+        <div class="wc-card-actions">
+          <button class="wc-action-btn primary" onclick="event.stopPropagation(); selectAndAnalyze(${wc.id})">
+            <i data-lucide="activity"></i>
+            Fix & Analyze
+          </button>
+          <button class="wc-action-btn secondary" onclick="event.stopPropagation(); viewDetails(${wc.id})">
+            <i data-lucide="info"></i>
+          </button>
+        </div>
+      </div>
+      
+      ${wc.alternatives.length > 0 ? `
+        <div class="wc-alternatives">
+          <button class="wc-alternatives-toggle" onclick="event.stopPropagation(); toggleAlternatives(this)">
+            <span>${wc.alternatives.length} Alternative${wc.alternatives.length > 1 ? 's' : ''} Available</span>
+            <i data-lucide="chevron-down"></i>
+          </button>
+          <div class="wc-alternatives-content">
+            ${wc.alternatives.map(alt => `
+              <div class="wc-alternative-item">
+                <div class="wc-alt-info">
+                  <div class="wc-alt-name">${alt.name}</div>
+                  <div class="wc-alt-code">${alt.code}</div>
+                </div>
+                <div class="wc-alt-comparison">
+                  <span class="wc-alt-metric ${alt.cost.startsWith('-') ? 'better' : alt.cost.startsWith('+') ? 'worse' : 'neutral'}">
+                    <i data-lucide="${alt.cost.startsWith('-') ? 'trending-down' : 'trending-up'}"></i>
+                    ${alt.cost}
+                  </span>
+                  <span class="wc-alt-metric ${alt.time.startsWith('-') ? 'better' : alt.time.startsWith('+') ? 'worse' : 'neutral'}">
+                    <i data-lucide="${alt.time.startsWith('-') ? 'clock' : 'clock'}"></i>
+                    ${alt.time}
+                  </span>
+                  <span class="wc-alt-metric neutral">
+                    OEE ${alt.oee}%
+                  </span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+// Select Work Center
+function selectWorkCenter(id) {
+  selectedWorkCenter = workCenters.find(wc => wc.id === id);
+  renderWorkCenters();
+  updatePreview();
+  updateCTAState();
+}
+
+// Select Request Type
+function selectRequestType(type) {
+  selectedRequestType = type;
+  
+  document.querySelectorAll('.request-type-card').forEach(card => {
+    card.classList.remove('selected');
+  });
+  document.querySelector(`[data-type="${type}"]`).classList.add('selected');
+  
+  updatePreview();
+  updateCTAState();
+  lucide.createIcons();
+}
+
+// Update Preview
+function updatePreview() {
+  const previewCard = document.getElementById('preview-card');
+  const previewText = document.getElementById('preview-text');
+  const reason = document.getElementById('reason-input').value;
+  
+  if (selectedRequestType && selectedWorkCenter) {
+    previewCard.classList.add('ready');
+    
+    const typeLabels = {
+      'fix': 'fix issues on',
+      'oee': 'analyze OEE for',
+      'maintenance': 'schedule maintenance for',
+      'optimization': 'optimize performance of'
+    };
+    
+    let text = `You are about to <span class="preview-highlight">${typeLabels[selectedRequestType]}</span> <span class="preview-highlight">${selectedWorkCenter.code}</span> – ${selectedWorkCenter.name}`;
+    
+    if (reason) {
+      text += `<br><br><em>Reason: "${reason}"</em>`;
+    }
+    
+    previewText.innerHTML = text;
+  } else if (selectedRequestType) {
+    previewCard.classList.remove('ready');
+    previewText.innerHTML = `Select a work center to ${selectedRequestType === 'fix' ? 'fix' : selectedRequestType === 'oee' ? 'analyze' : selectedRequestType === 'maintenance' ? 'maintain' : 'optimize'}`;
+  } else if (selectedWorkCenter) {
+    previewCard.classList.remove('ready');
+    previewText.innerHTML = `Select a request type for <span class="preview-highlight">${selectedWorkCenter.code}</span>`;
+  } else {
+    previewCard.classList.remove('ready');
+    previewText.innerHTML = 'Select a request type and work center to see your request summary';
+  }
+}
+
+// Update CTA State
+function updateCTAState() {
+  const btn = document.getElementById('continue-btn');
+  
+  if (selectedRequestType && selectedWorkCenter) {
+    btn.classList.add('active');
+  } else {
+    btn.classList.remove('active');
+  }
+}
+
+// Toggle Filter
+function toggleFilter(element) {
+  const filter = element.dataset.filter;
+  
+  if (activeFilters.includes(filter)) {
+    activeFilters = activeFilters.filter(f => f !== filter);
+    element.classList.remove('active');
+  } else {
+    activeFilters.push(filter);
+    element.classList.add('active');
+  }
+  
+  renderWorkCenters();
+}
+
+// Toggle Alternatives
+function toggleAlternatives(button) {
+  const content = button.nextElementSibling;
+  button.classList.toggle('expanded');
+  content.classList.toggle('expanded');
+}
+
+// Handle Search
+function handleSearch() {
+  renderWorkCenters();
+}
+
+// Toggle Sort Menu (simplified)
+function toggleSortMenu() {
+  const options = ['oee', 'cost', 'time'];
+  const labels = { oee: 'Best OEE', cost: 'Lowest Cost', time: 'Fastest Time' };
+  const currentIndex = options.indexOf(sortBy);
+  sortBy = options[(currentIndex + 1) % options.length];
+  document.getElementById('sort-label').textContent = labels[sortBy];
+  renderWorkCenters();
+}
+
+// Toggle Context Panel (Mobile)
+function toggleContextPanel() {
+  document.getElementById('context-panel').classList.toggle('expanded');
+}
+
+// Quick Actions
+function selectAndAnalyze(id) {
+  selectWorkCenter(id);
+  selectRequestType('oee');
+}
+
+function viewDetails(id) {
+  const wc = workCenters.find(w => w.id === id);
+  if (wc) {
+    alert(`Details for ${wc.name}\n\nCode: ${wc.code}\nOEE: ${wc.oee}%\nStatus: ${wc.status}\nCost: $${wc.costPerHour}/hr`);
+  }
+}
+
+// Continue with Request
+function continueWithRequest() {
+  if (!selectedRequestType || !selectedWorkCenter) return;
+  
+  const reason = document.getElementById('reason-input').value;
+  
+  // In a real app, this would navigate to the next step
+  const data = {
+    workCenter: selectedWorkCenter,
+    requestType: selectedRequestType,
+    reason: reason
+  };
+  
+  console.log('Continuing with request:', data);
+  
+  // Show success feedback
+  const btn = document.getElementById('continue-btn');
+  btn.innerHTML = '<i data-lucide="check"></i> <span>Request Created!</span>';
+  btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+  lucide.createIcons();
+  
+  setTimeout(() => {
+    // Reset or navigate
+    btn.innerHTML = '<span>Continue with this Request</span> <i data-lucide="arrow-right"></i>';
+    btn.style.background = '';
+    lucide.createIcons();
+  }, 2000);
+}
+
+// Keyboard Shortcuts
+document.addEventListener('keydown', function(e) {
+  // Focus search on /
+  if (e.key === '/' && !e.target.closest('input, textarea')) {
+    e.preventDefault();
+    document.getElementById('wc-search').focus();
+  }
+  
+  // Escape to clear selection
+  if (e.key === 'Escape') {
+    selectedWorkCenter = null;
+    renderWorkCenters();
+    updatePreview();
+    updateCTAState();
+  }
+});
+</script>
+{% endblock %}

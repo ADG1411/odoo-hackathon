@@ -1,0 +1,1563 @@
+{% extends "base.html" %}
+
+{% block title %}Technicians - GearGuard{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ================================================
+     TECHNICIANS PAGE - Ultra-Modern Industrial SaaS
+     Premium, Clean, 2025-Ready Design
+     ================================================ */
+  
+  /* Stats Cards Row */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-lg);
+    margin-bottom: var(--space-2xl);
+  }
+  
+  .stat-card {
+    background: var(--bg-card);
+    border-radius: var(--radius-xl);
+    padding: var(--space-xl);
+    box-shadow: var(--shadow-card);
+    display: flex;
+    align-items: center;
+    gap: var(--space-lg);
+    transition: all var(--transition-normal);
+    border: 1px solid transparent;
+  }
+  
+  .stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-card-hover);
+    border-color: var(--border-light);
+  }
+  
+  .stat-icon-wrapper {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  
+  .stat-icon-wrapper.total {
+    background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+    color: #4f46e5;
+  }
+  
+  .stat-icon-wrapper.available {
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    color: #059669;
+  }
+  
+  .stat-icon-wrapper.busy {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    color: #d97706;
+  }
+  
+  .stat-icon-wrapper.off-duty {
+    background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+    color: #64748b;
+  }
+  
+  .stat-content {
+    flex: 1;
+  }
+  
+  .stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+    margin-bottom: var(--space-xs);
+  }
+  
+  .stat-label {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+  
+  /* Filter Bar */
+  .filter-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-xl);
+    flex-wrap: wrap;
+  }
+  
+  .search-box {
+    position: relative;
+    flex: 1;
+    max-width: 320px;
+  }
+  
+  .search-box i {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    width: 18px;
+    height: 18px;
+  }
+  
+  .search-box input {
+    width: 100%;
+    padding: 14px 16px 14px 48px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    font-size: 0.9375rem;
+    transition: all var(--transition-fast);
+  }
+  
+  .search-box input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-light);
+    outline: none;
+  }
+  
+  .filter-select {
+    padding: 14px 44px 14px 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+  }
+  
+  .filter-select:focus {
+    border-color: var(--primary);
+    outline: none;
+  }
+  
+  /* Technicians Grid */
+  .technicians-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: var(--space-lg);
+  }
+  
+  /* Technician Card */
+  .technician-card {
+    background: var(--bg-card);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-card);
+    padding: var(--space-xl);
+    transition: all var(--transition-normal);
+    border: 1px solid transparent;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .technician-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-card-hover);
+    border-color: var(--border-light);
+  }
+  
+  .technician-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary), #8b5cf6);
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+  }
+  
+  .technician-card:hover::before {
+    opacity: 1;
+  }
+  
+  /* Card Header */
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--space-lg);
+  }
+  
+  .technician-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.15);
+  }
+  
+  .card-actions {
+    display: flex;
+    gap: var(--space-xs);
+  }
+  
+  .card-action-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-md);
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+  }
+  
+  .card-action-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+  }
+  
+  .card-action-btn.danger:hover {
+    background: var(--danger-light);
+    color: var(--danger);
+  }
+  
+  /* Card Content */
+  .technician-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-sm);
+  }
+  
+  .technician-meta {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-lg);
+  }
+  
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+  }
+  
+  .meta-item i {
+    width: 16px;
+    height: 16px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+  
+  .skill-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: 4px 12px;
+    background: var(--primary-light);
+    color: var(--primary);
+    border-radius: var(--radius-full);
+    font-size: 0.8125rem;
+    font-weight: 500;
+  }
+  
+  /* Card Footer */
+  .card-footer-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--border-light);
+    margin-top: auto;
+  }
+  
+  /* Status Badge */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: var(--radius-full);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    transition: all var(--transition-fast);
+  }
+  
+  .status-badge .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-full);
+    animation: pulse 2s infinite;
+  }
+  
+  .status-badge.available {
+    background: #ecfdf5;
+    color: #059669;
+  }
+  
+  .status-badge.available .status-dot {
+    background: #10b981;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+  }
+  
+  .status-badge.busy {
+    background: #fef3c7;
+    color: #b45309;
+  }
+  
+  .status-badge.busy .status-dot {
+    background: #f59e0b;
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+    animation: pulse-warning 2s infinite;
+  }
+  
+  .status-badge.off_duty,
+  .status-badge.off-duty {
+    background: #f1f5f9;
+    color: #64748b;
+  }
+  
+  .status-badge.off_duty .status-dot,
+  .status-badge.off-duty .status-dot {
+    background: #94a3b8;
+    animation: none;
+  }
+  
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.1); }
+  }
+  
+  @keyframes pulse-warning {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+  
+  .assign-btn {
+    padding: 8px 16px;
+    background: var(--bg-hover);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+  }
+  
+  .assign-btn:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+  }
+  
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: var(--space-2xl) var(--space-xl);
+    background: var(--bg-card);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-card);
+    max-width: 480px;
+    margin: 0 auto;
+  }
+  
+  .empty-state-icon {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto var(--space-xl);
+    background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+  }
+  
+  .empty-state-icon svg {
+    width: 56px;
+    height: 56px;
+    stroke-width: 1.5;
+  }
+  
+  .empty-state-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-sm);
+  }
+  
+  .empty-state-desc {
+    font-size: 1rem;
+    color: var(--text-muted);
+    margin-bottom: var(--space-xl);
+    line-height: 1.6;
+    max-width: 360px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  /* Modal Panel (Slide-in from right) */
+  .modal-panel {
+    position: fixed;
+    top: 0;
+    right: -520px;
+    width: 520px;
+    height: 100vh;
+    background: var(--bg-card);
+    box-shadow: var(--shadow-xl);
+    z-index: 1001;
+    display: flex;
+    flex-direction: column;
+    transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .modal-panel.active {
+    right: 0;
+  }
+  
+  .modal-panel-header {
+    padding: var(--space-xl) var(--space-2xl);
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(135deg, #fafafb, #ffffff);
+  }
+  
+  .modal-panel-title {
+    font-size: 1.375rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  
+  .modal-close-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+  }
+  
+  .modal-close-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+  }
+  
+  .modal-panel-body {
+    flex: 1;
+    padding: var(--space-2xl);
+    overflow-y: auto;
+  }
+  
+  .modal-panel-footer {
+    padding: var(--space-lg) var(--space-2xl);
+    border-top: 1px solid var(--border-light);
+    display: flex;
+    gap: var(--space-md);
+    justify-content: flex-end;
+    background: linear-gradient(135deg, #f8fafc, #ffffff);
+  }
+  
+  /* Form Styles */
+  .form-section {
+    margin-bottom: var(--space-xl);
+  }
+  
+  .form-section-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-sm);
+    border-bottom: 1px solid var(--border-light);
+  }
+  
+  .form-group {
+    margin-bottom: var(--space-lg);
+  }
+  
+  .form-label {
+    display: block;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: var(--space-sm);
+  }
+  
+  .form-label .required {
+    color: var(--danger);
+    margin-left: 2px;
+  }
+  
+  .form-input,
+  .form-select {
+    width: 100%;
+    padding: 14px 18px;
+    font-size: 0.9375rem;
+    font-family: var(--font-sans);
+    color: var(--text-primary);
+    background: var(--bg-card);
+    border: 1.5px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    transition: all var(--transition-fast);
+    outline: none;
+  }
+  
+  .form-input:hover,
+  .form-select:hover {
+    border-color: var(--border-medium);
+  }
+  
+  .form-input:focus,
+  .form-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-light);
+  }
+  
+  .form-input::placeholder {
+    color: var(--text-muted);
+  }
+  
+  .form-input.error,
+  .form-select.error {
+    border-color: var(--danger);
+  }
+  
+  .form-error {
+    margin-top: var(--space-xs);
+    font-size: 0.8125rem;
+    color: var(--danger);
+    display: none;
+  }
+  
+  .form-error.visible {
+    display: block;
+  }
+  
+  .form-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 48px;
+    cursor: pointer;
+  }
+  
+  /* Status Select Custom Styles */
+  .status-option {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+  
+  /* Overlay */
+  .side-panel-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition-normal);
+  }
+  
+  .side-panel-overlay.active {
+    opacity: 1;
+    visibility: visible;
+  }
+  
+  /* Delete Confirmation Modal */
+  .modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1002;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition-normal);
+  }
+  
+  .modal.active {
+    opacity: 1;
+    visibility: visible;
+  }
+  
+  .modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(4px);
+  }
+  
+  .modal-content {
+    position: relative;
+    background: var(--bg-card);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl);
+    max-width: 400px;
+    width: 90%;
+    overflow: hidden;
+    transform: scale(0.95);
+    transition: transform var(--transition-normal);
+  }
+  
+  .modal.active .modal-content {
+    transform: scale(1);
+  }
+  
+  .modal-header {
+    padding: var(--space-lg) var(--space-xl);
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .modal-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+  
+  .modal-close {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+  }
+  
+  .modal-close:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+  }
+  
+  .modal-body {
+    padding: var(--space-xl);
+    text-align: center;
+  }
+  
+  .modal-icon {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto var(--space-lg);
+    background: var(--danger-light);
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--danger);
+  }
+  
+  .modal-body h3 {
+    font-size: 1.125rem;
+    margin-bottom: var(--space-sm);
+  }
+  
+  .modal-body p {
+    color: var(--text-muted);
+  }
+  
+  .modal-footer {
+    padding: var(--space-lg) var(--space-xl);
+    border-top: 1px solid var(--border-light);
+    display: flex;
+    gap: var(--space-md);
+    justify-content: center;
+    background: var(--bg-hover);
+  }
+  
+  /* Success Toast */
+  .toast {
+    position: fixed;
+    bottom: var(--space-xl);
+    right: var(--space-xl);
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: var(--space-md) var(--space-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    z-index: 2000;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all var(--transition-normal);
+  }
+  
+  .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  
+  .toast.success {
+    border-left: 4px solid var(--success);
+  }
+  
+  .toast-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--success-light);
+    color: var(--success);
+  }
+  
+  .toast-message {
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+  
+  /* Skeleton Loading */
+  .skeleton {
+    background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: var(--radius-md);
+  }
+  
+  @keyframes skeleton-loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  
+  .skeleton-card {
+    background: var(--bg-card);
+    border-radius: var(--radius-xl);
+    padding: var(--space-xl);
+    box-shadow: var(--shadow-card);
+  }
+  
+  .skeleton-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: var(--radius-lg);
+  }
+  
+  .skeleton-text {
+    height: 16px;
+    margin-bottom: var(--space-sm);
+  }
+  
+  .skeleton-text.short {
+    width: 60%;
+  }
+  
+  .skeleton-text.medium {
+    width: 80%;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 1024px) {
+    .technicians-grid {
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    }
+    
+    .stats-row {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .technicians-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .stats-row {
+      grid-template-columns: 1fr;
+    }
+    
+    .modal-panel {
+      width: 100%;
+      right: -100%;
+      border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+      max-height: 90vh;
+      top: auto;
+      bottom: 0;
+      height: auto;
+    }
+    
+    .modal-panel.active {
+      right: 0;
+    }
+    
+    .filter-bar {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    
+    .search-box {
+      max-width: none;
+    }
+    
+    .filter-select {
+      width: 100%;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+  {% include "partials/sidebar.html" %}
+  
+  <main class="main-content">
+    <header class="page-header">
+      <div class="page-header-content">
+        <div class="page-title-section">
+          <nav class="page-breadcrumb">
+            <a href="/">Home</a>
+            <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i>
+            <span>Technicians</span>
+          </nav>
+          <h1 class="page-title">Technicians Management</h1>
+        </div>
+        
+        <div class="page-actions">
+          <button class="btn btn-primary" onclick="openAddModal()">
+            <i data-lucide="plus" style="width: 18px; height: 18px;"></i>
+            <span>Add Technician</span>
+          </button>
+        </div>
+      </div>
+    </header>
+    
+    <div class="page-body">
+      <div class="page-body-inner">
+        <!-- Stats Row -->
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-icon-wrapper total">
+              <i data-lucide="hard-hat" style="width: 24px; height: 24px;"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-number" id="stat-total">0</div>
+              <div class="stat-label">Total Technicians</div>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-icon-wrapper available">
+              <i data-lucide="user-check" style="width: 24px; height: 24px;"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-number" id="stat-available">0</div>
+              <div class="stat-label">Available</div>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-icon-wrapper busy">
+              <i data-lucide="clock" style="width: 24px; height: 24px;"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-number" id="stat-busy">0</div>
+              <div class="stat-label">Busy</div>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-icon-wrapper off-duty">
+              <i data-lucide="moon" style="width: 24px; height: 24px;"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-number" id="stat-off-duty">0</div>
+              <div class="stat-label">Off-duty</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+          <div class="search-box">
+            <i data-lucide="search"></i>
+            <input type="text" id="search-input" placeholder="Search technicians..." oninput="handleSearch()">
+          </div>
+          
+          <select class="filter-select" id="filter-skill" onchange="handleFilter()">
+            <option value="">All Skills</option>
+            <option value="Electrical">Electrical</option>
+            <option value="Mechanical">Mechanical</option>
+            <option value="HVAC">HVAC</option>
+            <option value="Plumbing">Plumbing</option>
+            <option value="General">General</option>
+            <option value="Welding">Welding</option>
+            <option value="Automation">Automation</option>
+            <option value="Instrumentation">Instrumentation</option>
+          </select>
+          
+          <select class="filter-select" id="filter-status" onchange="handleFilter()">
+            <option value="">All Statuses</option>
+            <option value="available">Available</option>
+            <option value="busy">Busy</option>
+            <option value="off_duty">Off-duty</option>
+          </select>
+          
+          <select class="filter-select" id="filter-team" onchange="handleFilter()">
+            <option value="">All Teams</option>
+          </select>
+        </div>
+        
+        <!-- Technicians Grid -->
+        <div class="technicians-grid" id="technicians-grid">
+          <!-- Skeleton loaders shown while loading -->
+          <div class="skeleton-card">
+            <div style="display: flex; gap: var(--space-md); margin-bottom: var(--space-lg);">
+              <div class="skeleton skeleton-avatar"></div>
+              <div style="flex: 1;">
+                <div class="skeleton skeleton-text medium"></div>
+                <div class="skeleton skeleton-text short"></div>
+              </div>
+            </div>
+            <div class="skeleton skeleton-text"></div>
+            <div class="skeleton skeleton-text short"></div>
+          </div>
+          <div class="skeleton-card">
+            <div style="display: flex; gap: var(--space-md); margin-bottom: var(--space-lg);">
+              <div class="skeleton skeleton-avatar"></div>
+              <div style="flex: 1;">
+                <div class="skeleton skeleton-text medium"></div>
+                <div class="skeleton skeleton-text short"></div>
+              </div>
+            </div>
+            <div class="skeleton skeleton-text"></div>
+            <div class="skeleton skeleton-text short"></div>
+          </div>
+          <div class="skeleton-card">
+            <div style="display: flex; gap: var(--space-md); margin-bottom: var(--space-lg);">
+              <div class="skeleton skeleton-avatar"></div>
+              <div style="flex: 1;">
+                <div class="skeleton skeleton-text medium"></div>
+                <div class="skeleton skeleton-text short"></div>
+              </div>
+            </div>
+            <div class="skeleton skeleton-text"></div>
+            <div class="skeleton skeleton-text short"></div>
+          </div>
+        </div>
+        
+        <!-- Empty State -->
+        <div class="empty-state" id="empty-state" style="display: none;">
+          <div class="empty-state-icon">
+            <i data-lucide="hard-hat"></i>
+          </div>
+          <h3 class="empty-state-title">No technicians added yet</h3>
+          <p class="empty-state-desc">Start building your maintenance workforce by adding your first technician to the system.</p>
+          <button class="btn btn-primary" onclick="openAddModal()">
+            <i data-lucide="plus" style="width: 18px; height: 18px;"></i>
+            Add your first technician
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Overlay -->
+<div class="side-panel-overlay" id="modal-overlay" onclick="closeModal()"></div>
+
+<!-- Add/Edit Technician Modal Panel -->
+<div class="modal-panel" id="technician-modal">
+  <div class="modal-panel-header">
+    <h2 class="modal-panel-title" id="modal-title">Add Technician</h2>
+    <button class="modal-close-btn" onclick="closeModal()">
+      <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+    </button>
+  </div>
+  
+  <div class="modal-panel-body">
+    <form id="technician-form" onsubmit="return false;">
+      <input type="hidden" id="technician-id">
+      
+      <div class="form-section">
+        <div class="form-section-title">Basic Information</div>
+        
+        <div class="form-group">
+          <label class="form-label">Technician Name <span class="required">*</span></label>
+          <input type="text" class="form-input" id="technician-name" placeholder="e.g., John Smith" required>
+          <span class="form-error" id="name-error">Please enter a valid name</span>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Skill / Specialization <span class="required">*</span></label>
+          <select class="form-select" id="technician-skill" required>
+            <option value="">Select a skill...</option>
+            <option value="Electrical">Electrical</option>
+            <option value="Mechanical">Mechanical</option>
+            <option value="HVAC">HVAC</option>
+            <option value="Plumbing">Plumbing</option>
+            <option value="General">General</option>
+            <option value="Welding">Welding</option>
+            <option value="Automation">Automation</option>
+            <option value="Instrumentation">Instrumentation</option>
+            <option value="Civil">Civil</option>
+            <option value="Safety">Safety</option>
+          </select>
+          <span class="form-error" id="skill-error">Please select a skill</span>
+        </div>
+      </div>
+      
+      <div class="form-section">
+        <div class="form-section-title">Assignment</div>
+        
+        <div class="form-group">
+          <label class="form-label">Assigned Team</label>
+          <select class="form-select" id="technician-team">
+            <option value="">No team assigned</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Company Name</label>
+          <input type="text" class="form-input" id="technician-company" placeholder="e.g., Acme Industries">
+        </div>
+      </div>
+      
+      <div class="form-section">
+        <div class="form-section-title">Availability</div>
+        
+        <div class="form-group">
+          <label class="form-label">Availability Status <span class="required">*</span></label>
+          <select class="form-select" id="technician-status" required>
+            <option value="available">✅ Available</option>
+            <option value="busy">🔶 Busy</option>
+            <option value="off_duty">🌙 Off-duty</option>
+          </select>
+        </div>
+      </div>
+    </form>
+  </div>
+  
+  <div class="modal-panel-footer">
+    <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-primary" id="save-btn" onclick="saveTechnician()">
+      <i data-lucide="check" style="width: 16px; height: 16px;"></i>
+      <span id="save-btn-text">Save Technician</span>
+    </button>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal" id="delete-modal">
+  <div class="modal-backdrop" onclick="closeDeleteModal()"></div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 class="modal-title">Confirm Delete</h2>
+      <button class="modal-close" onclick="closeDeleteModal()">
+        <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-icon">
+        <i data-lucide="trash-2" style="width: 32px; height: 32px;"></i>
+      </div>
+      <h3>Delete <span id="delete-name"></span>?</h3>
+      <p>This action cannot be undone. The technician will be removed from all teams and assignments.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmDelete()">
+        <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+        Delete
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Success Toast -->
+<div class="toast success" id="success-toast">
+  <div class="toast-icon">
+    <i data-lucide="check" style="width: 18px; height: 18px;"></i>
+  </div>
+  <div class="toast-message" id="toast-message">Technician saved successfully!</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// State
+let technicians = [];
+let teams = [];
+let editingId = null;
+let deleteId = null;
+let searchTimeout = null;
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+  loadTeams();
+  loadTechnicians();
+  loadStats();
+});
+
+// Load teams for dropdown
+async function loadTeams() {
+  try {
+    const response = await fetch('/api/teams');
+    teams = await response.json();
+    
+    const teamSelect = document.getElementById('technician-team');
+    const filterTeam = document.getElementById('filter-team');
+    
+    teams.forEach(team => {
+      teamSelect.innerHTML += `<option value="${team.id}">${team.name}</option>`;
+      filterTeam.innerHTML += `<option value="${team.id}">${team.name}</option>`;
+    });
+  } catch (error) {
+    console.error('Error loading teams:', error);
+  }
+}
+
+// Load technicians
+async function loadTechnicians() {
+  try {
+    const params = new URLSearchParams();
+    
+    const search = document.getElementById('search-input').value;
+    const skill = document.getElementById('filter-skill').value;
+    const status = document.getElementById('filter-status').value;
+    const team = document.getElementById('filter-team').value;
+    
+    if (search) params.append('search', search);
+    if (skill) params.append('skill', skill);
+    if (status) params.append('availability', status);
+    if (team) params.append('team_id', team);
+    
+    const response = await fetch(`/api/technicians?${params.toString()}`);
+    technicians = await response.json();
+    
+    renderTechnicians();
+  } catch (error) {
+    console.error('Error loading technicians:', error);
+    // Show mock data if API fails
+    technicians = getMockTechnicians();
+    renderTechnicians();
+  }
+}
+
+// Load stats
+async function loadStats() {
+  try {
+    const response = await fetch('/api/technicians/stats');
+    const stats = await response.json();
+    
+    document.getElementById('stat-total').textContent = stats.total;
+    document.getElementById('stat-available').textContent = stats.available;
+    document.getElementById('stat-busy').textContent = stats.busy;
+    document.getElementById('stat-off-duty').textContent = stats.off_duty;
+  } catch (error) {
+    console.error('Error loading stats:', error);
+    // Use mock stats
+    document.getElementById('stat-total').textContent = technicians.length;
+    document.getElementById('stat-available').textContent = technicians.filter(t => t.availability_status === 'available').length;
+    document.getElementById('stat-busy').textContent = technicians.filter(t => t.availability_status === 'busy').length;
+    document.getElementById('stat-off-duty').textContent = technicians.filter(t => t.availability_status === 'off_duty').length;
+  }
+}
+
+// Render technicians
+function renderTechnicians() {
+  const grid = document.getElementById('technicians-grid');
+  const emptyState = document.getElementById('empty-state');
+  
+  if (technicians.length === 0) {
+    grid.style.display = 'none';
+    emptyState.style.display = 'block';
+    return;
+  }
+  
+  grid.style.display = 'grid';
+  emptyState.style.display = 'none';
+  
+  grid.innerHTML = technicians.map(tech => createTechnicianCard(tech)).join('');
+  
+  // Re-initialize Lucide icons
+  lucide.createIcons();
+}
+
+// Create technician card HTML
+function createTechnicianCard(tech) {
+  const statusLabels = {
+    'available': 'Available',
+    'busy': 'Busy',
+    'off_duty': 'Off-duty'
+  };
+  
+  return `
+    <div class="technician-card" data-id="${tech.id}">
+      <div class="card-top">
+        <div class="technician-avatar" style="background: ${tech.avatar_color || '#6366f1'}">
+          ${tech.initials || getInitials(tech.name)}
+        </div>
+        <div class="card-actions">
+          <button class="card-action-btn" onclick="editTechnician(${tech.id})" title="Edit">
+            <i data-lucide="pencil" style="width: 16px; height: 16px;"></i>
+          </button>
+          <button class="card-action-btn danger" onclick="deleteTechnician(${tech.id}, '${tech.name}')" title="Delete">
+            <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+          </button>
+        </div>
+      </div>
+      
+      <h3 class="technician-name">${tech.name}</h3>
+      
+      <div class="technician-meta">
+        <div class="meta-item">
+          <i data-lucide="wrench"></i>
+          <span class="skill-badge">${tech.skill}</span>
+        </div>
+        ${tech.team_name ? `
+          <div class="meta-item">
+            <i data-lucide="users"></i>
+            <span>${tech.team_name}</span>
+          </div>
+        ` : ''}
+        ${tech.company_name ? `
+          <div class="meta-item">
+            <i data-lucide="building-2"></i>
+            <span>${tech.company_name}</span>
+          </div>
+        ` : ''}
+      </div>
+      
+      <div class="card-footer-section">
+        <div class="status-badge ${tech.availability_status}">
+          <span class="status-dot"></span>
+          ${statusLabels[tech.availability_status] || 'Unknown'}
+        </div>
+        <button class="assign-btn" onclick="assignToMaintenance(${tech.id})">
+          <i data-lucide="clipboard-check" style="width: 14px; height: 14px;"></i>
+          Assign
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+// Get initials from name
+function getInitials(name) {
+  const parts = name.split(' ');
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+  return name.substring(0, 2).toUpperCase();
+}
+
+// Search handler with debounce
+function handleSearch() {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    loadTechnicians();
+  }, 300);
+}
+
+// Filter handler
+function handleFilter() {
+  loadTechnicians();
+}
+
+// Open add modal
+function openAddModal() {
+  editingId = null;
+  document.getElementById('modal-title').textContent = 'Add Technician';
+  document.getElementById('save-btn-text').textContent = 'Save Technician';
+  document.getElementById('technician-form').reset();
+  document.getElementById('technician-id').value = '';
+  
+  // Clear any error states
+  document.querySelectorAll('.form-error').forEach(el => el.classList.remove('visible'));
+  document.querySelectorAll('.form-input, .form-select').forEach(el => el.classList.remove('error'));
+  
+  showModal();
+}
+
+// Edit technician
+function editTechnician(id) {
+  const tech = technicians.find(t => t.id === id);
+  if (!tech) return;
+  
+  editingId = id;
+  document.getElementById('modal-title').textContent = 'Edit Technician';
+  document.getElementById('save-btn-text').textContent = 'Update Technician';
+  
+  document.getElementById('technician-id').value = tech.id;
+  document.getElementById('technician-name').value = tech.name;
+  document.getElementById('technician-skill').value = tech.skill;
+  document.getElementById('technician-team').value = tech.team_id || '';
+  document.getElementById('technician-company').value = tech.company_name || '';
+  document.getElementById('technician-status').value = tech.availability_status;
+  
+  showModal();
+}
+
+// Delete technician
+function deleteTechnician(id, name) {
+  deleteId = id;
+  document.getElementById('delete-name').textContent = name;
+  document.getElementById('delete-modal').classList.add('active');
+}
+
+// Confirm delete
+async function confirmDelete() {
+  if (!deleteId) return;
+  
+  try {
+    const response = await fetch(`/api/technicians/${deleteId}`, {
+      method: 'DELETE',
+      credentials: 'include'
+    });
+    
+    if (response.ok) {
+      closeDeleteModal();
+      showToast('Technician deleted successfully');
+      loadTechnicians();
+      loadStats();
+    }
+  } catch (error) {
+    console.error('Error deleting technician:', error);
+    showToast('Error deleting technician');
+  }
+}
+
+// Close delete modal
+function closeDeleteModal() {
+  document.getElementById('delete-modal').classList.remove('active');
+  deleteId = null;
+}
+
+// Save technician
+async function saveTechnician() {
+  const name = document.getElementById('technician-name').value.trim();
+  const skill = document.getElementById('technician-skill').value;
+  const teamId = document.getElementById('technician-team').value;
+  const company = document.getElementById('technician-company').value.trim();
+  const status = document.getElementById('technician-status').value;
+  
+  // Validation
+  let isValid = true;
+  
+  if (!name) {
+    document.getElementById('technician-name').classList.add('error');
+    document.getElementById('name-error').classList.add('visible');
+    isValid = false;
+  } else {
+    document.getElementById('technician-name').classList.remove('error');
+    document.getElementById('name-error').classList.remove('visible');
+  }
+  
+  if (!skill) {
+    document.getElementById('technician-skill').classList.add('error');
+    document.getElementById('skill-error').classList.add('visible');
+    isValid = false;
+  } else {
+    document.getElementById('technician-skill').classList.remove('error');
+    document.getElementById('skill-error').classList.remove('visible');
+  }
+  
+  if (!isValid) return;
+  
+  const data = {
+    name: name,
+    skill: skill,
+    team_id: teamId ? parseInt(teamId) : null,
+    company_name: company || null,
+    availability_status: status
+  };
+  
+  try {
+    const url = editingId ? `/api/technicians/${editingId}` : '/api/technicians';
+    const method = editingId ? 'PUT' : 'POST';
+    
+    const response = await fetch(url, {
+      method: method,
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data),
+      credentials: 'include'
+    });
+    
+    if (response.ok) {
+      closeModal();
+      showToast(editingId ? 'Technician updated successfully!' : 'Technician added successfully!');
+      loadTechnicians();
+      loadStats();
+    } else {
+      const error = await response.json();
+      showToast(error.message || 'Error saving technician');
+    }
+  } catch (error) {
+    console.error('Error saving technician:', error);
+    showToast('Error saving technician');
+  }
+}
+
+// Assign to maintenance (placeholder)
+function assignToMaintenance(id) {
+  const tech = technicians.find(t => t.id === id);
+  if (tech) {
+    showToast(`Assign ${tech.name} to maintenance task`);
+    // In a full implementation, this would open a maintenance request selector
+  }
+}
+
+// Show modal
+function showModal() {
+  document.getElementById('modal-overlay').classList.add('active');
+  document.getElementById('technician-modal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+  
+  // Focus first input
+  setTimeout(() => {
+    document.getElementById('technician-name').focus();
+  }, 100);
+}
+
+// Close modal
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('active');
+  document.getElementById('technician-modal').classList.remove('active');
+  document.body.style.overflow = '';
+  editingId = null;
+}
+
+// Show toast notification
+function showToast(message) {
+  const toast = document.getElementById('success-toast');
+  document.getElementById('toast-message').textContent = message;
+  toast.classList.add('show');
+  
+  setTimeout(() => {
+    toast.classList.remove('show');
+  }, 3000);
+}
+
+// Mock technicians data for demo/fallback
+function getMockTechnicians() {
+  return [
+    {
+      id: 1,
+      name: 'Marcus Johnson',
+      skill: 'Electrical',
+      team_id: 1,
+      team_name: 'Alpha Team',
+      company_name: 'Acme Industries',
+      availability_status: 'available',
+      avatar_color: '#6366f1',
+      initials: 'MJ'
+    },
+    {
+      id: 2,
+      name: 'Sarah Chen',
+      skill: 'Mechanical',
+      team_id: 1,
+      team_name: 'Alpha Team',
+      company_name: 'Acme Industries',
+      availability_status: 'busy',
+      avatar_color: '#ec4899',
+      initials: 'SC'
+    },
+    {
+      id: 3,
+      name: 'David Miller',
+      skill: 'HVAC',
+      team_id: 2,
+      team_name: 'Beta Team',
+      company_name: 'TechCorp Ltd',
+      availability_status: 'available',
+      avatar_color: '#10b981',
+      initials: 'DM'
+    },
+    {
+      id: 4,
+      name: 'Emily Rodriguez',
+      skill: 'General',
+      team_id: null,
+      team_name: null,
+      company_name: 'Industrial Co',
+      availability_status: 'off_duty',
+      avatar_color: '#f59e0b',
+      initials: 'ER'
+    },
+    {
+      id: 5,
+      name: 'James Wilson',
+      skill: 'Automation',
+      team_id: 2,
+      team_name: 'Beta Team',
+      company_name: 'TechCorp Ltd',
+      availability_status: 'available',
+      avatar_color: '#8b5cf6',
+      initials: 'JW'
+    },
+    {
+      id: 6,
+      name: 'Rachel Kim',
+      skill: 'Instrumentation',
+      team_id: 3,
+      team_name: 'Gamma Team',
+      company_name: 'Acme Industries',
+      availability_status: 'busy',
+      avatar_color: '#ef4444',
+      initials: 'RK'
+    }
+  ];
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+  // Close modal on Escape
+  if (e.key === 'Escape') {
+    if (document.getElementById('delete-modal').classList.contains('active')) {
+      closeDeleteModal();
+    } else if (document.getElementById('technician-modal').classList.contains('active')) {
+      closeModal();
+    }
+  }
+  
+  // Open add modal on Ctrl+N
+  if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+    e.preventDefault();
+    openAddModal();
+  }
+});
+</script>
+{% endblock %}
