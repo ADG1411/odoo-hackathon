@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+
+{% block title %}Equipment Details - GearGuard{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+  {% include "partials/sidebar.html" %}
+  
+  <main class="main-content">
+    <header class="page-header">
+      <div class="page-header-content">
+        <div class="page-title-section">
+          <nav class="page-breadcrumb">
+            <a href="/">Home</a>
+            <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i>
+            <a href="/equipment">Equipment</a>
+            <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i>
+            <span id="breadcrumb-name">Loading...</span>
+          </nav>
+          <h1 class="page-title" id="equipment-title">Equipment Details</h1>
+        </div>
+        
+        <div class="page-actions">
+          <button class="btn btn-secondary" onclick="window.history.back()">
+            <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
+            Back
+          </button>
+          <button class="btn btn-secondary" onclick="editEquipment()">
+            <i data-lucide="edit" style="width: 18px; height: 18px;"></i>
+            Edit
+          </button>
+          <button class="btn btn-primary" onclick="createRequest()">
+            <i data-lucide="wrench" style="width: 18px; height: 18px;"></i>
+            Create Request
+          </button>
+        </div>
+      </div>
+    </header>
+    
+    <div class="page-body">
+      <div class="page-body-inner">
+        <div class="detail-layout">
+          <!-- Main Info Card -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Equipment Information</h3>
+              <span class="equipment-status" id="equipment-status">Loading...</span>
+            </div>
+            <div class="card-body">
+              <div class="detail-grid">
+                <div class="detail-item">
+                  <span class="detail-label">Code</span>
+                  <span class="detail-value" id="eq-code">-</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Name</span>
+                  <span class="detail-value" id="eq-name">-</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Category</span>
+                  <span class="detail-value" id="eq-category">-</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Model</span>
+                  <span class="detail-value" id="eq-model">-</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Manufacturer</span>
+                  <span class="detail-value" id="eq-manufacturer">-</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Serial Number</span>
+                  <span class="detail-value" id="eq-serial">-</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Location</span>
+                  <span class="detail-value" id="eq-location">-</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Department</span>
+                  <span class="detail-value" id="eq-department">-</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Owner</span>
+                  <span class="detail-value" id="eq-owner">-</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Default Team</span>
+                  <span class="detail-value" id="eq-team">-</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Cost</span>
+                  <span class="detail-value" id="eq-cost">-</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Purchase Date</span>
+                  <span class="detail-value" id="eq-purchase-date">-</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Warranty Expiry</span>
+                  <span class="detail-value" id="eq-warranty">-</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Last Maintenance</span>
+                  <span class="detail-value" id="eq-last-maintenance">-</span>
+                </div>
+              </div>
+              
+              <div class="detail-item full-width" style="margin-top: var(--space-lg);">
+                <span class="detail-label">Notes</span>
+                <p class="detail-value" id="eq-notes" style="margin-top: var(--space-xs); white-space: pre-wrap;">-</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Maintenance History -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Maintenance History</h3>
+              <span class="badge" id="history-count">0 requests</span>
+            </div>
+            <div class="card-body">
+              <div class="table-container">
+                <table class="table" id="history-table">
+                  <thead>
+                    <tr>
+                      <th>Reference</th>
+                      <th>Name</th>
+                      <th>Type</th>
+                      <th>Status</th>
+                      <th>Date</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="history-tbody">
+                    <tr>
+                      <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                        Loading maintenance history...
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<style>
+.detail-layout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-lg);
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.detail-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-value {
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.equipment-status {
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.equipment-status.operational { background: var(--success-bg); color: var(--success); }
+.equipment-status.maintenance { background: var(--warning-bg); color: var(--warning-dark); }
+.equipment-status.broken { background: var(--danger-bg); color: var(--danger); }
+
+.table-container { overflow-x: auto; }
+.table { width: 100%; border-collapse: collapse; }
+.table th, .table td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border-color); }
+.table th { font-weight: 600; color: var(--text-muted); font-size: 12px; text-transform: uppercase; }
+</style>
+
+<script>
+const equipmentId = {{ equipment_id }};
+
+document.addEventListener('DOMContentLoaded', loadEquipmentDetails);
+
+async function loadEquipmentDetails() {
+  try {
+    const equipment = await GearGuardAPI.equipment.getById(equipmentId);
+    
+    document.getElementById('breadcrumb-name').textContent = equipment.code || 'Details';
+    document.getElementById('equipment-title').textContent = equipment.name;
+    
+    const statusEl = document.getElementById('equipment-status');
+    statusEl.textContent = equipment.status || 'Unknown';
+    statusEl.className = 'equipment-status ' + (equipment.status || '');
+    
+    document.getElementById('eq-code').textContent = equipment.code || '-';
+    document.getElementById('eq-name').textContent = equipment.name || '-';
+    document.getElementById('eq-category').textContent = equipment.category_name || '-';
+    document.getElementById('eq-model').textContent = equipment.model || '-';
+    document.getElementById('eq-manufacturer').textContent = equipment.manufacturer || '-';
+    document.getElementById('eq-serial').textContent = equipment.serial_number || '-';
+    document.getElementById('eq-location').textContent = equipment.location || '-';
+    document.getElementById('eq-department').textContent = equipment.department || '-';
+    document.getElementById('eq-owner').textContent = equipment.owner_name || '-';
+    document.getElementById('eq-team').textContent = equipment.team_name || '-';
+    document.getElementById('eq-cost').textContent = equipment.cost ? '₹' + parseFloat(equipment.cost).toLocaleString('en-IN') : '-';
+    document.getElementById('eq-purchase-date').textContent = formatDate(equipment.purchase_date);
+    document.getElementById('eq-warranty').textContent = formatDate(equipment.warranty_expiry);
+    document.getElementById('eq-last-maintenance').textContent = formatDate(equipment.last_maintenance);
+    document.getElementById('eq-notes').textContent = equipment.notes || 'No notes available.';
+    
+    // Load maintenance history
+    loadMaintenanceHistory();
+    
+    lucide.createIcons();
+  } catch (error) {
+    console.error('Failed to load equipment:', error);
+    alert('Failed to load equipment details');
+  }
+}
+
+async function loadMaintenanceHistory() {
+  try {
+    const requests = await GearGuardAPI.requests.getAll({ equipment_id: equipmentId });
+    const tbody = document.getElementById('history-tbody');
+    
+    if (!requests || requests.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: var(--text-muted);">No maintenance history</td></tr>';
+      return;
+    }
+    
+    document.getElementById('history-count').textContent = requests.length + ' requests';
+    
+    tbody.innerHTML = requests.map(req => `
+      <tr>
+        <td><code>${req.reference || '-'}</code></td>
+        <td>${req.name}</td>
+        <td><span class="badge">${req.request_type || 'N/A'}</span></td>
+        <td><span class="badge badge-${req.stage_name?.toLowerCase().replace(' ', '-') || 'default'}">${req.stage_name || 'Unknown'}</span></td>
+        <td>${formatDate(req.request_date)}</td>
+        <td><a href="/requests/${req.id}" class="btn btn-sm btn-secondary">View</a></td>
+      </tr>
+    `).join('');
+  } catch (error) {
+    console.error('Failed to load history:', error);
+  }
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '-';
+  return new Date(dateStr).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function editEquipment() {
+  window.location.href = '/equipment?edit=' + equipmentId;
+}
+
+function createRequest() {
+  window.location.href = '/requests?action=create&equipment_id=' + equipmentId;
+}
+</script>
+{% endblock %}

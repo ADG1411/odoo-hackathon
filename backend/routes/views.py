@@ -89,3 +89,9 @@ def reports():
 def settings():
     """Settings page"""
     return render_template('settings.html')
+
+
+@views.route('/profile')
+def profile():
+    """User profile page - redirects to settings"""
+    return render_template('settings.html')

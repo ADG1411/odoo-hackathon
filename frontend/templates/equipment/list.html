@@ -1,0 +1,373 @@
+{% extends "base.html" %}
+
+{% block title %}Equipment - GearGuard{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+  <!-- Sidebar -->
+  {% include "partials/sidebar.html" %}
+  
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Page Header -->
+    <header class="page-header">
+      <div class="page-header-content">
+        <div class="page-title-section">
+          <nav class="page-breadcrumb">
+            <a href="/">Home</a>
+            <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i>
+            <span>Equipment</span>
+          </nav>
+          <h1 class="page-title">Equipment Management</h1>
+        </div>
+        
+        <div class="page-actions">
+          <!-- Search -->
+          <div class="search-wrapper" style="position: relative;">
+            <i data-lucide="search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--text-muted);"></i>
+            <input 
+              type="text" 
+              class="form-input" 
+              placeholder="Search equipment..." 
+              id="search-input"
+              style="padding-left: 40px; width: 280px;"
+              oninput="filterEquipment()"
+            >
+          </div>
+          
+          <!-- Filters -->
+          <select class="form-select" id="filter-category" onchange="filterEquipment()" style="width: 160px;">
+            <option value="">All Categories</option>
+          </select>
+          
+          <select class="form-select" id="filter-status" onchange="filterEquipment()" style="width: 140px;">
+            <option value="">All Status</option>
+            <option value="operational">Operational</option>
+            <option value="maintenance">Under Maintenance</option>
+            <option value="broken">Broken</option>
+          </select>
+          
+          <!-- Add Button -->
+          <button class="btn btn-primary" onclick="openCreateModal()">
+            <i data-lucide="plus" style="width: 18px; height: 18px;"></i>
+            <span>Add Equipment</span>
+          </button>
+        </div>
+      </div>
+    </header>
+    
+    <!-- Page Body -->
+    <div class="page-body">
+      <div class="page-body-inner">
+        
+        <!-- Quick Stats Bar -->
+        <div class="info-bar" style="margin-bottom: var(--space-xl);">
+          <div class="info-bar-item">
+            <i data-lucide="box" style="width: 18px; height: 18px; color: var(--text-muted);"></i>
+            <div>
+              <div class="info-bar-label">Total Equipment</div>
+              <div class="info-bar-value" id="stat-total">0</div>
+            </div>
+          </div>
+          <div class="info-bar-item">
+            <i data-lucide="check-circle" style="width: 18px; height: 18px; color: var(--success);"></i>
+            <div>
+              <div class="info-bar-label">Operational</div>
+              <div class="info-bar-value" id="stat-operational">0</div>
+            </div>
+          </div>
+          <div class="info-bar-item">
+            <i data-lucide="wrench" style="width: 18px; height: 18px; color: var(--warning);"></i>
+            <div>
+              <div class="info-bar-label">Under Maintenance</div>
+              <div class="info-bar-value" id="stat-maintenance">0</div>
+            </div>
+          </div>
+          <div class="info-bar-item">
+            <i data-lucide="alert-triangle" style="width: 18px; height: 18px; color: var(--danger);"></i>
+            <div>
+              <div class="info-bar-label">Broken</div>
+              <div class="info-bar-value" id="stat-broken">0</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Equipment Cards Grid -->
+        <div class="card-grid" id="equipment-grid">
+          <!-- Equipment cards will be rendered here by JavaScript -->
+          <div class="loading-placeholder">
+            <i data-lucide="loader" class="spinning" style="width: 32px; height: 32px; color: var(--text-muted);"></i>
+            <p>Loading equipment...</p>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Create/Edit Equipment Modal -->
+<div class="modal-overlay" id="equipment-modal" style="display: none;">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modal-title">Add Equipment</h2>
+      <button class="modal-close" onclick="closeModal()">
+        <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+      </button>
+    </div>
+    <form id="equipment-form" onsubmit="submitEquipment(event)">
+      <div class="modal-body">
+        <input type="hidden" id="equipment-id" name="id">
+        
+        <div class="form-row">
+          <div class="form-group" style="flex: 1;">
+            <label class="form-label" for="equipment-code">Equipment Code *</label>
+            <input type="text" class="form-input" id="equipment-code" name="code" required placeholder="e.g., EQ-0018">
+          </div>
+          <div class="form-group" style="flex: 2;">
+            <label class="form-label" for="equipment-name">Equipment Name *</label>
+            <input type="text" class="form-input" id="equipment-name" name="name" required placeholder="Enter equipment name">
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group" style="flex: 1;">
+            <label class="form-label" for="equipment-category">Category *</label>
+            <select class="form-select" id="equipment-category" name="category_id" required>
+              <option value="">Select category</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label class="form-label" for="equipment-status">Status *</label>
+            <select class="form-select" id="equipment-status" name="status" required>
+              <option value="operational">Operational</option>
+              <option value="maintenance">Under Maintenance</option>
+              <option value="broken">Broken</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group" style="flex: 1;">
+            <label class="form-label" for="equipment-model">Model</label>
+            <input type="text" class="form-input" id="equipment-model" name="model" placeholder="Enter model">
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label class="form-label" for="equipment-manufacturer">Manufacturer</label>
+            <input type="text" class="form-input" id="equipment-manufacturer" name="manufacturer" placeholder="Enter manufacturer">
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group" style="flex: 1;">
+            <label class="form-label" for="equipment-location">Location</label>
+            <input type="text" class="form-input" id="equipment-location" name="location" placeholder="Enter location">
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label class="form-label" for="equipment-department">Department</label>
+            <input type="text" class="form-input" id="equipment-department" name="department" placeholder="Enter department">
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group" style="flex: 1;">
+            <label class="form-label" for="equipment-team">Default Team</label>
+            <select class="form-select" id="equipment-team" name="default_team_id">
+              <option value="">Select team</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label class="form-label" for="equipment-cost">Cost (₹)</label>
+            <input type="number" class="form-input" id="equipment-cost" name="cost" placeholder="Enter cost" step="0.01">
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group" style="flex: 1;">
+            <label class="form-label" for="equipment-purchase-date">Purchase Date</label>
+            <input type="date" class="form-input" id="equipment-purchase-date" name="purchase_date">
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label class="form-label" for="equipment-warranty">Warranty Expiry</label>
+            <input type="date" class="form-input" id="equipment-warranty" name="warranty_expiry">
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="equipment-owner">Owner Name</label>
+          <input type="text" class="form-input" id="equipment-owner" name="owner_name" placeholder="Enter owner name">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="equipment-notes">Notes</label>
+          <textarea class="form-textarea" id="equipment-notes" name="notes" rows="3" placeholder="Additional notes..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary">
+          <i data-lucide="save" style="width: 16px; height: 16px;"></i>
+          <span id="submit-btn-text">Create Equipment</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: var(--space-lg);
+}
+
+.equipment-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  transition: all 0.2s ease;
+}
+
+.equipment-card:hover {
+  border-color: var(--primary);
+  box-shadow: var(--shadow-md);
+}
+
+.equipment-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-md);
+}
+
+.equipment-code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+  background: var(--bg-subtle);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+}
+
+.equipment-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: var(--space-xs) 0;
+}
+
+.equipment-category {
+  font-size: 13px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.equipment-status {
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.equipment-status.operational {
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.equipment-status.maintenance {
+  background: var(--warning-bg);
+  color: var(--warning-dark);
+}
+
+.equipment-status.broken {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.equipment-details {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-sm);
+  margin: var(--space-md) 0;
+  padding: var(--space-md) 0;
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.detail-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-value {
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.equipment-actions {
+  display: flex;
+  gap: var(--space-sm);
+  justify-content: flex-end;
+}
+
+.equipment-actions .btn {
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+.loading-placeholder {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3xl);
+  color: var(--text-muted);
+  gap: var(--space-md);
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.form-row {
+  display: flex;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.form-textarea {
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  resize: vertical;
+  min-height: 80px;
+}
+
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+</style>
+
+<script src="{{ url_for('static', filename='js/equipment.js') }}"></script>
+{% endblock %}

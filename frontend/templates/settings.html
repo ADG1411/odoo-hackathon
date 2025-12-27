@@ -1,0 +1,582 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - GearGuard{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+  {% include "partials/sidebar.html" %}
+  
+  <main class="main-content">
+    <header class="page-header">
+      <div class="page-header-content">
+        <div class="page-title-section">
+          <nav class="page-breadcrumb">
+            <a href="/">Home</a>
+            <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i>
+            <span>Settings</span>
+          </nav>
+          <h1 class="page-title">Settings</h1>
+        </div>
+      </div>
+    </header>
+    
+    <div class="page-body">
+      <div class="page-body-inner">
+        <div class="settings-layout">
+          <nav class="settings-nav">
+            <button class="settings-nav-item active" onclick="showSection('profile')">
+              <i data-lucide="user" style="width: 18px; height: 18px;"></i>
+              Profile
+            </button>
+            <button class="settings-nav-item" onclick="showSection('notifications')">
+              <i data-lucide="bell" style="width: 18px; height: 18px;"></i>
+              Notifications
+            </button>
+            <button class="settings-nav-item" onclick="showSection('appearance')">
+              <i data-lucide="palette" style="width: 18px; height: 18px;"></i>
+              Appearance
+            </button>
+            <button class="settings-nav-item" onclick="showSection('security')">
+              <i data-lucide="shield" style="width: 18px; height: 18px;"></i>
+              Security
+            </button>
+          </nav>
+          
+          <div class="settings-content">
+            <!-- Profile Section -->
+            <div class="settings-section active" id="section-profile">
+              <div class="settings-card">
+                <div class="settings-card-header">
+                  <h2 class="settings-card-title">Profile Information</h2>
+                  <p class="settings-card-subtitle">Update your personal information and preferences.</p>
+                </div>
+                <div class="settings-card-body">
+                  <form id="profile-form" onsubmit="saveProfile(event)">
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label class="form-label">Username</label>
+                        <input type="text" class="form-input" id="profile-username" placeholder="Your username">
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" id="profile-email" placeholder="your@email.com">
+                      </div>
+                    </div>
+                    
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" class="form-input" id="profile-name" placeholder="Full name">
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label">Role</label>
+                        <input type="text" class="form-input" id="profile-role" disabled placeholder="Your role">
+                      </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                      <button type="submit" class="btn btn-primary">
+                        <i data-lucide="save" style="width: 16px; height: 16px;"></i>
+                        Save Changes
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+              
+              <div class="settings-card danger-zone">
+                <div class="settings-card-header">
+                  <h2 class="settings-card-title">Session</h2>
+                  <p class="settings-card-subtitle">Manage your current session.</p>
+                </div>
+                <div class="settings-card-body">
+                  <a href="/auth/logout" class="btn btn-danger">
+                    <i data-lucide="log-out" style="width: 16px; height: 16px;"></i>
+                    Sign Out
+                  </a>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Notifications Section -->
+            <div class="settings-section" id="section-notifications">
+              <div class="settings-card">
+                <div class="settings-card-header">
+                  <h2 class="settings-card-title">Notification Preferences</h2>
+                  <p class="settings-card-subtitle">Configure how you receive notifications.</p>
+                </div>
+                <div class="settings-card-body">
+                  <div class="setting-item">
+                    <div class="setting-info">
+                      <div class="setting-label">Email Notifications</div>
+                      <div class="setting-description">Receive email notifications for important updates.</div>
+                    </div>
+                    <label class="toggle">
+                      <input type="checkbox" id="email-notifications" checked>
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+                  
+                  <div class="setting-item">
+                    <div class="setting-info">
+                      <div class="setting-label">New Request Alerts</div>
+                      <div class="setting-description">Get notified when new maintenance requests are created.</div>
+                    </div>
+                    <label class="toggle">
+                      <input type="checkbox" id="request-alerts" checked>
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+                  
+                  <div class="setting-item">
+                    <div class="setting-info">
+                      <div class="setting-label">Status Updates</div>
+                      <div class="setting-description">Get notified when request status changes.</div>
+                    </div>
+                    <label class="toggle">
+                      <input type="checkbox" id="status-updates" checked>
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+                  
+                  <div class="setting-item">
+                    <div class="setting-info">
+                      <div class="setting-label">Weekly Reports</div>
+                      <div class="setting-description">Receive weekly maintenance summary reports.</div>
+                    </div>
+                    <label class="toggle">
+                      <input type="checkbox" id="weekly-reports">
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Appearance Section -->
+            <div class="settings-section" id="section-appearance">
+              <div class="settings-card">
+                <div class="settings-card-header">
+                  <h2 class="settings-card-title">Appearance</h2>
+                  <p class="settings-card-subtitle">Customize how GearGuard looks.</p>
+                </div>
+                <div class="settings-card-body">
+                  <div class="setting-item">
+                    <div class="setting-info">
+                      <div class="setting-label">Theme</div>
+                      <div class="setting-description">Choose your preferred color theme.</div>
+                    </div>
+                    <select class="form-select" id="theme-select" onchange="changeTheme(this.value)">
+                      <option value="light">Light</option>
+                      <option value="dark">Dark</option>
+                      <option value="system">System</option>
+                    </select>
+                  </div>
+                  
+                  <div class="setting-item">
+                    <div class="setting-info">
+                      <div class="setting-label">Compact Mode</div>
+                      <div class="setting-description">Use compact spacing for more information density.</div>
+                    </div>
+                    <label class="toggle">
+                      <input type="checkbox" id="compact-mode">
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+                  
+                  <div class="setting-item">
+                    <div class="setting-info">
+                      <div class="setting-label">Sidebar Collapsed</div>
+                      <div class="setting-description">Start with the sidebar in collapsed state.</div>
+                    </div>
+                    <label class="toggle">
+                      <input type="checkbox" id="sidebar-collapsed">
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Security Section -->
+            <div class="settings-section" id="section-security">
+              <div class="settings-card">
+                <div class="settings-card-header">
+                  <h2 class="settings-card-title">Change Password</h2>
+                  <p class="settings-card-subtitle">Update your password to keep your account secure.</p>
+                </div>
+                <div class="settings-card-body">
+                  <form id="password-form" onsubmit="changePassword(event)">
+                    <div class="form-group">
+                      <label class="form-label">Current Password</label>
+                      <input type="password" class="form-input" id="current-password" placeholder="Enter current password">
+                    </div>
+                    
+                    <div class="form-group">
+                      <label class="form-label">New Password</label>
+                      <input type="password" class="form-input" id="new-password" placeholder="Enter new password">
+                    </div>
+                    
+                    <div class="form-group">
+                      <label class="form-label">Confirm New Password</label>
+                      <input type="password" class="form-input" id="confirm-password" placeholder="Confirm new password">
+                    </div>
+                    
+                    <div class="form-actions">
+                      <button type="submit" class="btn btn-primary">
+                        <i data-lucide="lock" style="width: 16px; height: 16px;"></i>
+                        Update Password
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+              
+              <div class="settings-card">
+                <div class="settings-card-header">
+                  <h2 class="settings-card-title">Sessions</h2>
+                  <p class="settings-card-subtitle">Manage your active sessions.</p>
+                </div>
+                <div class="settings-card-body">
+                  <div class="session-item">
+                    <div class="session-icon">
+                      <i data-lucide="monitor" style="width: 20px; height: 20px;"></i>
+                    </div>
+                    <div class="session-info">
+                      <div class="session-device">Current Session</div>
+                      <div class="session-details">This device • Active now</div>
+                    </div>
+                    <span class="session-badge">Current</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<style>
+.settings-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: var(--space-xl);
+}
+
+@media (max-width: 768px) {
+  .settings-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.settings-nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.settings-nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.settings-nav-item:hover {
+  background: var(--muted-bg);
+}
+
+.settings-nav-item.active {
+  background: var(--primary-bg);
+  color: var(--primary);
+  font-weight: 500;
+}
+
+.settings-section {
+  display: none;
+}
+
+.settings-section.active {
+  display: block;
+}
+
+.settings-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-lg);
+}
+
+.settings-card.danger-zone {
+  border-color: var(--danger);
+}
+
+.settings-card-header {
+  padding: var(--space-lg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.settings-card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-xs);
+}
+
+.settings-card-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.settings-card-body {
+  padding: var(--space-lg);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-lg);
+}
+
+@media (max-width: 600px) {
+  .form-row { grid-template-columns: 1fr; }
+}
+
+.form-group {
+  margin-bottom: var(--space-lg);
+}
+
+.form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-xs);
+}
+
+.form-input, .form-select {
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+}
+
+.form-input:focus, .form-select:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.form-input:disabled {
+  background: var(--muted-bg);
+  color: var(--text-muted);
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: var(--space-md);
+}
+
+.setting-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-md) 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.setting-item:last-child {
+  border-bottom: none;
+}
+
+.setting-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: var(--space-xs);
+}
+
+.setting-description {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.toggle {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+}
+
+.toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--border-color);
+  transition: 0.3s;
+  border-radius: 24px;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+.toggle input:checked + .toggle-slider {
+  background-color: var(--primary);
+}
+
+.toggle input:checked + .toggle-slider:before {
+  transform: translateX(20px);
+}
+
+.session-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  background: var(--muted-bg);
+  border-radius: var(--radius-md);
+}
+
+.session-icon {
+  width: 40px;
+  height: 40px;
+  background: var(--card-bg);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+}
+
+.session-info { flex: 1; }
+
+.session-device {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.session-details {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.session-badge {
+  font-size: 11px;
+  padding: 4px 8px;
+  background: var(--success-bg);
+  color: var(--success);
+  border-radius: var(--radius-full);
+  font-weight: 500;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', loadUserProfile);
+
+async function loadUserProfile() {
+  try {
+    const data = await GearGuardAPI.users.getCurrentUser();
+    const user = data.user || data;
+    
+    document.getElementById('profile-username').value = user.username || '';
+    document.getElementById('profile-email').value = user.email || '';
+    document.getElementById('profile-name').value = user.name || '';
+    document.getElementById('profile-role').value = user.role || '';
+  } catch (error) {
+    console.error('Failed to load user profile:', error);
+  }
+  
+  lucide.createIcons();
+}
+
+function showSection(section) {
+  document.querySelectorAll('.settings-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.settings-nav-item').forEach(b => b.classList.remove('active'));
+  
+  document.getElementById(`section-${section}`).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+async function saveProfile(event) {
+  event.preventDefault();
+  
+  const data = {
+    username: document.getElementById('profile-username').value,
+    email: document.getElementById('profile-email').value,
+    name: document.getElementById('profile-name').value
+  };
+  
+  try {
+    await GearGuardAPI.users.updateProfile(data);
+    alert('Profile updated successfully!');
+  } catch (error) {
+    alert('Failed to update profile: ' + error.message);
+  }
+}
+
+async function changePassword(event) {
+  event.preventDefault();
+  
+  const newPassword = document.getElementById('new-password').value;
+  const confirmPassword = document.getElementById('confirm-password').value;
+  
+  if (newPassword !== confirmPassword) {
+    alert('New passwords do not match!');
+    return;
+  }
+  
+  try {
+    await GearGuardAPI.users.changePassword({
+      current_password: document.getElementById('current-password').value,
+      new_password: newPassword
+    });
+    alert('Password changed successfully!');
+    document.getElementById('password-form').reset();
+  } catch (error) {
+    alert('Failed to change password: ' + error.message);
+  }
+}
+
+function changeTheme(theme) {
+  localStorage.setItem('theme', theme);
+  if (theme === 'system') {
+    theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  document.documentElement.setAttribute('data-theme', theme);
+}
+
+// Load saved theme
+const savedTheme = localStorage.getItem('theme') || 'light';
+document.getElementById('theme-select').value = savedTheme;
+</script>
+{% endblock %}

@@ -1,0 +1,529 @@
+{% extends "base.html" %}
+
+{% block title %}Request Details - GearGuard{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+  {% include "partials/sidebar.html" %}
+  
+  <main class="main-content">
+    <header class="page-header">
+      <div class="page-header-content">
+        <div class="page-title-section">
+          <nav class="page-breadcrumb">
+            <a href="/">Home</a>
+            <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i>
+            <a href="/requests">Requests</a>
+            <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i>
+            <span id="request-breadcrumb">Loading...</span>
+          </nav>
+          <h1 class="page-title" id="request-title">Request Details</h1>
+        </div>
+        
+        <div class="page-actions">
+          <a href="/requests" class="btn btn-secondary">
+            <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
+            Back to Requests
+          </a>
+          <button class="btn btn-primary" onclick="openEditModal()">
+            <i data-lucide="edit-2" style="width: 18px; height: 18px;"></i>
+            Edit Request
+          </button>
+        </div>
+      </div>
+    </header>
+    
+    <div class="page-body">
+      <div class="page-body-inner">
+        <div class="request-detail-container" id="request-container">
+          <div class="loading-placeholder">
+            <i data-lucide="loader" class="spinning"></i>
+            <p>Loading request details...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<style>
+.request-detail-container {
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: var(--space-lg);
+}
+
+@media (max-width: 1024px) {
+  .request-detail-container { grid-template-columns: 1fr; }
+}
+
+.request-main-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.request-header {
+  padding: var(--space-xl);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.request-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-lg);
+  margin-bottom: var(--space-md);
+}
+
+.request-name {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.request-badges {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.badge {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-weight: 500;
+}
+
+.badge-priority-high { background: var(--danger-bg); color: var(--danger); }
+.badge-priority-medium { background: var(--warning-bg); color: var(--warning); }
+.badge-priority-low { background: var(--success-bg); color: var(--success); }
+
+.badge-type-preventive { background: #e0f2fe; color: #0369a1; }
+.badge-type-corrective { background: #fef3c7; color: #92400e; }
+.badge-type-predictive { background: #f3e8ff; color: #7c3aed; }
+.badge-type-emergency { background: #fee2e2; color: #dc2626; }
+
+.request-meta-info {
+  display: flex;
+  gap: var(--space-lg);
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.request-body {
+  padding: var(--space-xl);
+}
+
+.request-section {
+  margin-bottom: var(--space-xl);
+}
+
+.section-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: var(--space-sm);
+}
+
+.section-content {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-lg);
+}
+
+.detail-item {
+  padding: var(--space-md);
+  background: var(--muted-bg);
+  border-radius: var(--radius-md);
+}
+
+.detail-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: var(--space-xs);
+}
+
+.detail-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.sidebar-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-lg);
+}
+
+.sidebar-card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-md);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.stage-progress {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.stage-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+}
+
+.stage-item.active {
+  background: var(--primary-bg);
+  color: var(--primary);
+  font-weight: 500;
+}
+
+.stage-item.completed {
+  color: var(--success);
+}
+
+.stage-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--border-color);
+}
+
+.stage-item.active .stage-dot { background: var(--primary); }
+.stage-item.completed .stage-dot { background: var(--success); }
+
+.equipment-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  background: var(--muted-bg);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.equipment-link:hover {
+  background: var(--border-color);
+}
+
+.equipment-icon {
+  width: 48px;
+  height: 48px;
+  background: var(--primary-bg);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+}
+
+.equipment-info { flex: 1; }
+
+.equipment-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.equipment-category {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.loading-placeholder {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px;
+  color: var(--text-muted);
+  gap: var(--space-md);
+}
+
+.spinning { animation: spin 1s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+.status-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+}
+</style>
+
+<script>
+let request = null;
+let stages = [];
+
+document.addEventListener('DOMContentLoaded', () => {
+  const requestId = window.location.pathname.split('/').pop();
+  if (requestId) {
+    loadRequestDetails(requestId);
+    loadStages();
+  }
+});
+
+async function loadStages() {
+  try {
+    const data = await GearGuardAPI.stages.getAll();
+    stages = data.stages || data || [];
+  } catch (error) {
+    console.error('Failed to load stages:', error);
+  }
+}
+
+async function loadRequestDetails(id) {
+  try {
+    const data = await GearGuardAPI.requests.getById(id);
+    request = data.request || data;
+    
+    document.getElementById('request-breadcrumb').textContent = request.name || `Request #${request.id}`;
+    document.getElementById('request-title').textContent = request.name || 'Request Details';
+    
+    renderRequestDetails();
+  } catch (error) {
+    console.error('Failed to load request:', error);
+    document.getElementById('request-container').innerHTML = `
+      <div class="loading-placeholder">
+        <i data-lucide="alert-circle" style="width: 48px; height: 48px;"></i>
+        <p>Request not found</p>
+        <a href="/requests" class="btn btn-primary">Back to Requests</a>
+      </div>
+    `;
+    lucide.createIcons();
+  }
+}
+
+function renderRequestDetails() {
+  const container = document.getElementById('request-container');
+  
+  const priorityClass = `badge-priority-${request.priority || 'medium'}`;
+  const typeClass = `badge-type-${request.maintenance_type || 'corrective'}`;
+  
+  container.innerHTML = `
+    <div class="request-main-card">
+      <div class="request-header">
+        <div class="request-title-row">
+          <h2 class="request-name">${request.name || 'Unnamed Request'}</h2>
+          <div class="request-badges">
+            <span class="badge ${priorityClass}">${(request.priority || 'medium').toUpperCase()}</span>
+            <span class="badge ${typeClass}">${formatType(request.maintenance_type)}</span>
+          </div>
+        </div>
+        <div class="request-meta-info">
+          <span class="meta-item">
+            <i data-lucide="calendar" style="width: 14px; height: 14px;"></i>
+            Created: ${formatDate(request.created_at)}
+          </span>
+          <span class="meta-item">
+            <i data-lucide="clock" style="width: 14px; height: 14px;"></i>
+            Duration: ${request.duration || 0} hours
+          </span>
+          ${request.scheduled_date ? `
+            <span class="meta-item">
+              <i data-lucide="calendar-check" style="width: 14px; height: 14px;"></i>
+              Scheduled: ${formatDate(request.scheduled_date)}
+            </span>
+          ` : ''}
+        </div>
+      </div>
+      
+      <div class="request-body">
+        <div class="request-section">
+          <div class="section-label">Description</div>
+          <div class="section-content">${request.description || 'No description provided.'}</div>
+        </div>
+        
+        ${request.technician_notes ? `
+          <div class="request-section">
+            <div class="section-label">Technician Notes</div>
+            <div class="section-content">${request.technician_notes}</div>
+          </div>
+        ` : ''}
+        
+        <div class="request-section">
+          <div class="section-label">Request Details</div>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <div class="detail-label">Requester Name</div>
+              <div class="detail-value">${request.requester_name || '-'}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Requester Email</div>
+              <div class="detail-value">${request.requester_email || '-'}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Assigned Team</div>
+              <div class="detail-value">${request.team?.name || 'Unassigned'}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Current Stage</div>
+              <div class="detail-value">${request.stage?.name || '-'}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="sidebar-column">
+      <div class="sidebar-card">
+        <h3 class="sidebar-card-title">
+          <i data-lucide="git-branch" style="width: 16px; height: 16px;"></i>
+          Progress
+        </h3>
+        <div class="stage-progress" id="stage-progress">
+          ${renderStageProgress()}
+        </div>
+        <div class="status-actions">
+          <button class="btn btn-primary" onclick="moveToNextStage()">
+            <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
+            Move to Next Stage
+          </button>
+        </div>
+      </div>
+      
+      ${request.equipment ? `
+        <div class="sidebar-card">
+          <h3 class="sidebar-card-title">
+            <i data-lucide="box" style="width: 16px; height: 16px;"></i>
+            Equipment
+          </h3>
+          <a href="/equipment/${request.equipment.id}" class="equipment-link">
+            <div class="equipment-icon">
+              <i data-lucide="cog" style="width: 24px; height: 24px;"></i>
+            </div>
+            <div class="equipment-info">
+              <div class="equipment-name">${request.equipment.name}</div>
+              <div class="equipment-category">${request.equipment.category?.name || 'Uncategorized'}</div>
+            </div>
+            <i data-lucide="external-link" style="width: 16px; height: 16px; color: var(--text-muted);"></i>
+          </a>
+        </div>
+      ` : ''}
+      
+      <div class="sidebar-card">
+        <h3 class="sidebar-card-title">
+          <i data-lucide="settings" style="width: 16px; height: 16px;"></i>
+          Quick Actions
+        </h3>
+        <div style="display: flex; flex-direction: column; gap: var(--space-sm);">
+          <button class="btn btn-secondary" onclick="openEditModal()">
+            <i data-lucide="edit-2" style="width: 16px; height: 16px;"></i>
+            Edit Request
+          </button>
+          <button class="btn btn-danger" onclick="deleteRequest()">
+            <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+            Delete Request
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  lucide.createIcons();
+}
+
+function renderStageProgress() {
+  if (stages.length === 0) return '<p style="color: var(--text-muted);">Loading stages...</p>';
+  
+  const currentStageId = request.stage_id;
+  let passedCurrent = false;
+  
+  return stages.map(stage => {
+    const isActive = stage.id === currentStageId;
+    const isCompleted = !passedCurrent && !isActive;
+    if (isActive) passedCurrent = true;
+    
+    return `
+      <div class="stage-item ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}">
+        <span class="stage-dot"></span>
+        <span>${stage.name}</span>
+        ${isCompleted ? '<i data-lucide="check" style="width: 14px; height: 14px; margin-left: auto;"></i>' : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '-';
+  return new Date(dateStr).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+}
+
+function formatType(type) {
+  const types = {
+    preventive: 'Preventive',
+    corrective: 'Corrective',
+    predictive: 'Predictive',
+    emergency: 'Emergency'
+  };
+  return types[type] || type || 'Unknown';
+}
+
+async function moveToNextStage() {
+  if (!request || stages.length === 0) return;
+  
+  const currentIndex = stages.findIndex(s => s.id === request.stage_id);
+  if (currentIndex === -1 || currentIndex >= stages.length - 1) {
+    alert('Request is already at the final stage.');
+    return;
+  }
+  
+  const nextStage = stages[currentIndex + 1];
+  
+  try {
+    await GearGuardAPI.requests.update(request.id, { stage_id: nextStage.id });
+    request.stage_id = nextStage.id;
+    request.stage = nextStage;
+    renderRequestDetails();
+  } catch (error) {
+    alert('Failed to update stage: ' + error.message);
+  }
+}
+
+function openEditModal() {
+  // Redirect to requests page with edit mode
+  window.location.href = '/requests?edit=' + request.id;
+}
+
+async function deleteRequest() {
+  if (!confirm('Are you sure you want to delete this request?')) return;
+  
+  try {
+    await GearGuardAPI.requests.delete(request.id);
+    window.location.href = '/requests';
+  } catch (error) {
+    alert('Failed to delete request: ' + error.message);
+  }
+}
+</script>
+{% endblock %}

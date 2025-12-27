@@ -1,0 +1,485 @@
+{% extends "base.html" %}
+
+{% block title %}Reports & Analytics - GearGuard{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+  {% include "partials/sidebar.html" %}
+  
+  <main class="main-content">
+    <header class="page-header">
+      <div class="page-header-content">
+        <div class="page-title-section">
+          <nav class="page-breadcrumb">
+            <a href="/">Home</a>
+            <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i>
+            <span>Reports</span>
+          </nav>
+          <h1 class="page-title">Reports & Analytics</h1>
+        </div>
+        
+        <div class="page-actions">
+          <button class="btn btn-secondary" onclick="exportReport()">
+            <i data-lucide="download" style="width: 18px; height: 18px;"></i>
+            Export Report
+          </button>
+        </div>
+      </div>
+    </header>
+    
+    <div class="page-body">
+      <div class="page-body-inner">
+        <!-- Summary Cards -->
+        <div class="summary-grid">
+          <div class="summary-card">
+            <div class="summary-icon" style="background: var(--primary-bg); color: var(--primary);">
+              <i data-lucide="box" style="width: 24px; height: 24px;"></i>
+            </div>
+            <div class="summary-content">
+              <div class="summary-value" id="total-equipment">-</div>
+              <div class="summary-label">Total Equipment</div>
+            </div>
+          </div>
+          
+          <div class="summary-card">
+            <div class="summary-icon" style="background: var(--success-bg); color: var(--success);">
+              <i data-lucide="check-circle" style="width: 24px; height: 24px;"></i>
+            </div>
+            <div class="summary-content">
+              <div class="summary-value" id="completed-requests">-</div>
+              <div class="summary-label">Completed Requests</div>
+            </div>
+          </div>
+          
+          <div class="summary-card">
+            <div class="summary-icon" style="background: var(--warning-bg); color: var(--warning);">
+              <i data-lucide="clock" style="width: 24px; height: 24px;"></i>
+            </div>
+            <div class="summary-content">
+              <div class="summary-value" id="pending-requests">-</div>
+              <div class="summary-label">Pending Requests</div>
+            </div>
+          </div>
+          
+          <div class="summary-card">
+            <div class="summary-icon" style="background: var(--danger-bg); color: var(--danger);">
+              <i data-lucide="alert-triangle" style="width: 24px; height: 24px;"></i>
+            </div>
+            <div class="summary-content">
+              <div class="summary-value" id="high-priority">-</div>
+              <div class="summary-label">High Priority</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Charts Section -->
+        <div class="reports-grid">
+          <div class="report-card">
+            <div class="report-header">
+              <h3 class="report-title">Requests by Status</h3>
+            </div>
+            <div class="report-body">
+              <div class="chart-container" id="status-chart">
+                <div class="chart-placeholder">Loading...</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="report-card">
+            <div class="report-header">
+              <h3 class="report-title">Requests by Priority</h3>
+            </div>
+            <div class="report-body">
+              <div class="chart-container" id="priority-chart">
+                <div class="chart-placeholder">Loading...</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="report-card">
+            <div class="report-header">
+              <h3 class="report-title">Equipment by Category</h3>
+            </div>
+            <div class="report-body">
+              <div class="chart-container" id="category-chart">
+                <div class="chart-placeholder">Loading...</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="report-card">
+            <div class="report-header">
+              <h3 class="report-title">Maintenance Types</h3>
+            </div>
+            <div class="report-body">
+              <div class="chart-container" id="type-chart">
+                <div class="chart-placeholder">Loading...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Recent Activity -->
+        <div class="report-card full-width">
+          <div class="report-header">
+            <h3 class="report-title">Recent Maintenance Activity</h3>
+          </div>
+          <div class="report-body">
+            <div class="activity-table-container">
+              <table class="data-table" id="activity-table">
+                <thead>
+                  <tr>
+                    <th>Request</th>
+                    <th>Equipment</th>
+                    <th>Type</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody id="activity-body">
+                  <tr>
+                    <td colspan="6" style="text-align: center; padding: 40px;">Loading...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<style>
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-lg);
+  margin-bottom: var(--space-xl);
+}
+
+@media (max-width: 1024px) {
+  .summary-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 600px) {
+  .summary-grid { grid-template-columns: 1fr; }
+}
+
+.summary-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.summary-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.summary-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.summary-label {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.reports-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-lg);
+  margin-bottom: var(--space-xl);
+}
+
+@media (max-width: 900px) {
+  .reports-grid { grid-template-columns: 1fr; }
+}
+
+.report-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.report-card.full-width {
+  grid-column: 1 / -1;
+}
+
+.report-header {
+  padding: var(--space-lg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.report-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.report-body {
+  padding: var(--space-lg);
+}
+
+.chart-container {
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.chart-placeholder {
+  text-align: center;
+  color: var(--text-muted);
+  padding: var(--space-xl);
+}
+
+.chart-bar-group {
+  margin-bottom: var(--space-md);
+}
+
+.chart-bar-label {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--space-xs);
+  font-size: 13px;
+}
+
+.chart-bar-track {
+  height: 24px;
+  background: var(--muted-bg);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.chart-bar-fill {
+  height: 100%;
+  border-radius: var(--radius-sm);
+  transition: width 0.5s ease;
+}
+
+.activity-table-container {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+  padding: var(--space-md);
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.data-table th {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.data-table td {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.priority-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.priority-badge.high { background: var(--danger-bg); color: var(--danger); }
+.priority-badge.medium { background: var(--warning-bg); color: var(--warning); }
+.priority-badge.low { background: var(--success-bg); color: var(--success); }
+
+.status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 500;
+  background: var(--muted-bg);
+  color: var(--text-secondary);
+}
+</style>
+
+<script>
+let equipment = [];
+let requests = [];
+let categories = [];
+let stages = [];
+
+document.addEventListener('DOMContentLoaded', loadReportData);
+
+async function loadReportData() {
+  try {
+    const [eqData, reqData, catData, stgData] = await Promise.all([
+      GearGuardAPI.equipment.getAll(),
+      GearGuardAPI.requests.getAll(),
+      GearGuardAPI.categories.getAll(),
+      GearGuardAPI.stages.getAll()
+    ]);
+    
+    equipment = eqData.equipment || eqData || [];
+    requests = reqData.requests || reqData || [];
+    categories = catData.categories || catData || [];
+    stages = stgData.stages || stgData || [];
+    
+    updateSummary();
+    renderCharts();
+    renderActivityTable();
+  } catch (error) {
+    console.error('Failed to load report data:', error);
+  }
+}
+
+function updateSummary() {
+  document.getElementById('total-equipment').textContent = equipment.length;
+  
+  const completed = requests.filter(r => r.stage?.name === 'Done').length;
+  const pending = requests.filter(r => r.stage?.name !== 'Done').length;
+  const highPriority = requests.filter(r => r.priority === 'high').length;
+  
+  document.getElementById('completed-requests').textContent = completed;
+  document.getElementById('pending-requests').textContent = pending;
+  document.getElementById('high-priority').textContent = highPriority;
+}
+
+function renderCharts() {
+  // Status Chart
+  const statusCounts = {};
+  stages.forEach(s => statusCounts[s.name] = 0);
+  requests.forEach(r => {
+    const stage = r.stage?.name || 'Unknown';
+    statusCounts[stage] = (statusCounts[stage] || 0) + 1;
+  });
+  renderBarChart('status-chart', statusCounts, ['#3b82f6', '#22c55e', '#eab308', '#ef4444', '#8b5cf6', '#06b6d4']);
+  
+  // Priority Chart
+  const priorityCounts = { high: 0, medium: 0, low: 0 };
+  requests.forEach(r => {
+    const p = r.priority || 'medium';
+    priorityCounts[p] = (priorityCounts[p] || 0) + 1;
+  });
+  renderBarChart('priority-chart', priorityCounts, ['#ef4444', '#eab308', '#22c55e']);
+  
+  // Category Chart
+  const catCounts = {};
+  categories.forEach(c => catCounts[c.name] = 0);
+  equipment.forEach(e => {
+    const cat = e.category?.name || 'Uncategorized';
+    catCounts[cat] = (catCounts[cat] || 0) + 1;
+  });
+  renderBarChart('category-chart', catCounts, ['#0d6efd', '#6366f1', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899']);
+  
+  // Type Chart
+  const typeCounts = { preventive: 0, corrective: 0, predictive: 0, emergency: 0 };
+  requests.forEach(r => {
+    const t = r.maintenance_type || 'corrective';
+    typeCounts[t] = (typeCounts[t] || 0) + 1;
+  });
+  renderBarChart('type-chart', typeCounts, ['#0ea5e9', '#f59e0b', '#8b5cf6', '#ef4444']);
+}
+
+function renderBarChart(containerId, data, colors) {
+  const container = document.getElementById(containerId);
+  const entries = Object.entries(data);
+  const maxValue = Math.max(...Object.values(data), 1);
+  
+  let html = '';
+  entries.forEach(([label, value], i) => {
+    const width = (value / maxValue) * 100;
+    const color = colors[i % colors.length];
+    html += `
+      <div class="chart-bar-group">
+        <div class="chart-bar-label">
+          <span>${label}</span>
+          <span style="font-weight: 600;">${value}</span>
+        </div>
+        <div class="chart-bar-track">
+          <div class="chart-bar-fill" style="width: ${width}%; background: ${color};"></div>
+        </div>
+      </div>
+    `;
+  });
+  
+  container.innerHTML = html || '<div class="chart-placeholder">No data available</div>';
+}
+
+function renderActivityTable() {
+  const tbody = document.getElementById('activity-body');
+  const recentRequests = [...requests].sort((a, b) => 
+    new Date(b.created_at || 0) - new Date(a.created_at || 0)
+  ).slice(0, 10);
+  
+  if (recentRequests.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: var(--text-muted);">No recent activity</td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = recentRequests.map(r => `
+    <tr>
+      <td>
+        <a href="/requests/${r.id}" style="color: var(--primary); font-weight: 500;">${r.name || 'Unnamed'}</a>
+      </td>
+      <td>${r.equipment?.name || '-'}</td>
+      <td>${formatType(r.maintenance_type)}</td>
+      <td><span class="priority-badge ${r.priority || 'medium'}">${(r.priority || 'medium').toUpperCase()}</span></td>
+      <td><span class="status-badge">${r.stage?.name || '-'}</span></td>
+      <td>${formatDate(r.created_at)}</td>
+    </tr>
+  `).join('');
+}
+
+function formatType(type) {
+  const types = { preventive: 'Preventive', corrective: 'Corrective', predictive: 'Predictive', emergency: 'Emergency' };
+  return types[type] || type || '-';
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '-';
+  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function exportReport() {
+  const data = {
+    generated: new Date().toISOString(),
+    summary: {
+      totalEquipment: equipment.length,
+      completedRequests: requests.filter(r => r.stage?.name === 'Done').length,
+      pendingRequests: requests.filter(r => r.stage?.name !== 'Done').length,
+      highPriority: requests.filter(r => r.priority === 'high').length
+    },
+    requests: requests,
+    equipment: equipment
+  };
+  
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `gearguard-report-${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+</script>
+{% endblock %}

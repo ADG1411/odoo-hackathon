@@ -316,35 +316,160 @@
 
 {% block extra_js %}
 <script>
+// Dashboard state
+let dashboardData = {
+  stats: null,
+  recentRequests: [],
+  requestsByStage: [],
+  currentUser: null
+};
+
+// Load all dashboard data
 async function loadDashboardData() {
   try {
-    // Load KPI data
-    const response = await fetch('/api/dashboard/stats');
-    if (response.ok) {
-      const data = await response.json();
-      document.getElementById('total-requests').textContent = data.total_requests || '0';
-      document.getElementById('open-requests').textContent = data.open_requests || '0';
-      document.getElementById('scheduled-requests').textContent = data.scheduled_requests || '0';
-      document.getElementById('high-priority').textContent = data.high_priority || '0';
+    // Load stats
+    const stats = await GearGuardAPI.dashboard.getStats();
+    if (stats) {
+      dashboardData.stats = stats;
+      updateStatsUI(stats);
     }
+    
+    // Load recent requests
+    const recentRequests = await GearGuardAPI.dashboard.getRecentRequests();
+    if (recentRequests && recentRequests.length > 0) {
+      dashboardData.recentRequests = recentRequests;
+      updateRecentActivityUI(recentRequests);
+    }
+    
+    // Load requests by stage for chart
+    const stageData = await GearGuardAPI.dashboard.getRequestsByStage();
+    if (stageData) {
+      dashboardData.requestsByStage = stageData;
+    }
+    
+    // Load current user info
+    const user = await GearGuardAPI.auth.getCurrentUser();
+    if (user) {
+      dashboardData.currentUser = user;
+      updateUserInfoUI(user);
+    }
+    
   } catch (error) {
-    console.log('Using mock data for dashboard');
+    console.error('Error loading dashboard:', error);
+    showToast('Error', 'Failed to load dashboard data', 'error');
   }
 }
 
-function refreshDashboard() {
-  showToast('Refreshing', 'Dashboard data is being updated...', 'info');
-  loadDashboardData();
-  setTimeout(() => {
-    showToast('Success', 'Dashboard refreshed successfully', 'success');
-  }, 1000);
+// Update KPI stats in UI
+function updateStatsUI(stats) {
+  // Equipment stats
+  const totalEquipment = stats.equipment?.total || 0;
+  const operationalEquipment = stats.equipment?.operational || 0;
+  
+  // Request stats
+  document.getElementById('total-requests').textContent = stats.requests?.total || '0';
+  document.getElementById('open-requests').textContent = stats.requests?.open || '0';
+  document.getElementById('high-priority').textContent = stats.requests?.overdue || '0';
+  
+  // Calculate scheduled (we can use completed this month or another metric)
+  const scheduled = stats.requests?.completed_this_month || 0;
+  document.getElementById('scheduled-requests').textContent = scheduled;
 }
 
+// Update recent activity list
+function updateRecentActivityUI(requests) {
+  const container = document.getElementById('recent-activity');
+  if (!container || requests.length === 0) return;
+  
+  const html = requests.slice(0, 5).map(req => {
+    const statusBadge = getStatusBadge(req);
+    const icon = getActivityIcon(req);
+    const timeAgo = formatDate(req.created_at || req.request_date, 'relative');
+    
+    return `
+      <li class="widget-list-item">
+        <div class="avatar avatar-sm" style="background: ${icon.bg}; color: ${icon.color};">
+          <i data-lucide="${icon.name}" style="width: 16px; height: 16px;"></i>
+        </div>
+        <div style="flex: 1;">
+          <div style="font-weight: 500; font-size: 0.875rem;">${req.equipment_name || 'Unknown Equipment'} - ${req.name}</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">${req.reference} • ${timeAgo}</div>
+        </div>
+        <span class="badge ${statusBadge.class}">${statusBadge.text}</span>
+      </li>
+    `;
+  }).join('');
+  
+  container.innerHTML = html;
+  lucide.createIcons();
+}
+
+// Get status badge info
+function getStatusBadge(req) {
+  const stageName = (req.stage_name || '').toLowerCase();
+  
+  if (stageName.includes('done') || stageName.includes('repaired') || stageName.includes('completed')) {
+    return { class: 'badge-success', text: 'Completed' };
+  } else if (stageName.includes('progress')) {
+    return { class: 'badge-warning', text: 'In Progress' };
+  } else if (stageName.includes('scrap')) {
+    return { class: 'badge-secondary', text: 'Scrapped' };
+  } else if (req.is_overdue) {
+    return { class: 'badge-danger', text: 'Overdue' };
+  } else if (req.priority === 'urgent' || req.priority === 'high') {
+    return { class: 'badge-danger', text: req.priority.charAt(0).toUpperCase() + req.priority.slice(1) };
+  } else {
+    return { class: 'badge-info', text: 'New' };
+  }
+}
+
+// Get activity icon based on request state
+function getActivityIcon(req) {
+  const stageName = (req.stage_name || '').toLowerCase();
+  
+  if (stageName.includes('done') || stageName.includes('repaired') || stageName.includes('completed')) {
+    return { name: 'check-circle', bg: 'var(--success-light)', color: 'var(--success)' };
+  } else if (stageName.includes('progress')) {
+    return { name: 'clock', bg: 'var(--warning-light)', color: 'var(--warning)' };
+  } else if (req.is_overdue || req.priority === 'urgent') {
+    return { name: 'alert-circle', bg: 'var(--danger-light)', color: 'var(--danger)' };
+  } else if (req.request_type === 'preventive') {
+    return { name: 'calendar', bg: 'var(--info-light)', color: 'var(--info)' };
+  } else {
+    return { name: 'wrench', bg: 'var(--primary-light)', color: 'var(--primary)' };
+  }
+}
+
+// Update user info in header
+function updateUserInfoUI(user) {
+  const employeeName = document.getElementById('employee-name');
+  if (employeeName && user) {
+    employeeName.textContent = user.full_name || user.email || 'Guest';
+  }
+  
+  const adminName = document.getElementById('admin-name');
+  if (adminName && user && user.role === 'Admin') {
+    adminName.textContent = user.full_name || 'Admin';
+  }
+}
+
+// Refresh dashboard
+function refreshDashboard() {
+  showToast('Refreshing', 'Dashboard data is being updated...', 'info');
+  loadDashboardData().then(() => {
+    showToast('Success', 'Dashboard refreshed successfully', 'success');
+    lucide.createIcons();
+  });
+}
+
+// Open create request modal
 function openCreateRequestModal() {
   window.location.href = '/requests?action=create';
 }
 
-// Load dashboard data on page load
-document.addEventListener('DOMContentLoaded', loadDashboardData);
+// Load dashboard on page load
+document.addEventListener('DOMContentLoaded', function() {
+  loadDashboardData();
+});
 </script>
 {% endblock %}

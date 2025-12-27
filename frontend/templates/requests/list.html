@@ -506,106 +506,43 @@
     <div class="modal-body">
       <form id="request-form">
         <div class="form-grid">
-          <!-- Created By -->
-          <div class="form-group">
-            <label for="created_by" class="form-label">Created By</label>
-            <input type="text" id="created_by" name="created_by" class="form-input" value="Sarah Johnson" readonly style="background: var(--bg-hover);">
-          </div>
-          
-          <!-- Maintenance For -->
-          <div class="form-group">
-            <label for="maintenance_for" class="form-label">Maintenance For</label>
-            <select id="maintenance_for" name="maintenance_for" class="form-select" required>
-              <option value="">Select purpose</option>
-              <option value="equipment">Equipment Repair</option>
-              <option value="preventive">Preventive Maintenance</option>
-              <option value="inspection">Inspection</option>
-              <option value="calibration">Calibration</option>
-            </select>
+          <!-- Request Name (Required) -->
+          <div class="form-group full-width">
+            <label for="request-name" class="form-label">Request Name <span style="color: var(--danger);">*</span></label>
+            <input type="text" id="request-name" name="name" class="form-input" placeholder="e.g., Hydraulic pump repair, Quarterly maintenance" required>
           </div>
           
           <!-- Equipment -->
           <div class="form-group">
-            <label for="equipment" class="form-label">Equipment</label>
-            <select id="equipment" name="equipment" class="form-select" required>
+            <label for="equipment-select" class="form-label">Equipment <span style="color: var(--danger);">*</span></label>
+            <select id="equipment-select" name="equipment_id" class="form-select" required onchange="onEquipmentChange(this.value)">
               <option value="">Select equipment</option>
-              <option value="1">Hydraulic Press #7</option>
-              <option value="2">CNC Machine #12</option>
-              <option value="3">Conveyor Belt A3</option>
-              <option value="4">Robotic Arm Unit 5</option>
-              <option value="5">Generator Unit 1</option>
-              <option value="6">HVAC System B2</option>
-            </select>
-          </div>
-          
-          <!-- Category -->
-          <div class="form-group">
-            <label for="category" class="form-label">Category</label>
-            <select id="category" name="category" class="form-select" required>
-              <option value="">Select category</option>
-              <option value="electrical">Electrical</option>
-              <option value="mechanical">Mechanical</option>
-              <option value="hydraulic">Hydraulic</option>
-              <option value="pneumatic">Pneumatic</option>
-              <option value="electronic">Electronic</option>
-            </select>
-          </div>
-          
-          <!-- Request Date -->
-          <div class="form-group">
-            <label for="request_date" class="form-label">Request Date</label>
-            <input type="date" id="request_date" name="request_date" class="form-input" required>
-          </div>
-          
-          <!-- Maintenance Type -->
-          <div class="form-group">
-            <label for="maintenance_type" class="form-label">Maintenance Type</label>
-            <select id="maintenance_type" name="maintenance_type" class="form-select" required>
-              <option value="">Select type</option>
-              <option value="corrective">Corrective</option>
-              <option value="preventive">Preventive</option>
+              <!-- Populated by JavaScript -->
             </select>
           </div>
           
           <!-- Team -->
           <div class="form-group">
-            <label for="team" class="form-label">Team</label>
-            <select id="team" name="team" class="form-select" required>
+            <label for="team-select" class="form-label">Team</label>
+            <select id="team-select" name="team_id" class="form-select">
               <option value="">Select team</option>
-              <option value="alpha">Team Alpha</option>
-              <option value="beta">Team Beta</option>
-              <option value="gamma">Team Gamma</option>
+              <!-- Populated by JavaScript -->
             </select>
           </div>
           
-          <!-- Technician -->
+          <!-- Maintenance Type -->
           <div class="form-group">
-            <label for="technician" class="form-label">Technician</label>
-            <select id="technician" name="technician" class="form-select">
-              <option value="">Assign technician (optional)</option>
-              <option value="1">Mike Wilson</option>
-              <option value="2">John Davis</option>
-              <option value="3">Sarah Connor</option>
-              <option value="4">James Brown</option>
+            <label for="type-select" class="form-label">Maintenance Type</label>
+            <select id="type-select" name="request_type" class="form-select">
+              <option value="corrective">Corrective</option>
+              <option value="preventive">Preventive</option>
             </select>
-          </div>
-          
-          <!-- Scheduled Date -->
-          <div class="form-group">
-            <label for="scheduled_date" class="form-label">Scheduled Date</label>
-            <input type="datetime-local" id="scheduled_date" name="scheduled_date" class="form-input" required>
-          </div>
-          
-          <!-- Duration -->
-          <div class="form-group">
-            <label for="duration" class="form-label">Duration (hours)</label>
-            <input type="number" id="duration" name="duration" class="form-input" min="0.5" step="0.5" placeholder="e.g., 4" required>
           </div>
           
           <!-- Priority -->
           <div class="form-group">
-            <label for="priority" class="form-label">Priority</label>
-            <select id="priority" name="priority" class="form-select" required>
+            <label for="priority-select" class="form-label">Priority</label>
+            <select id="priority-select" name="priority" class="form-select">
               <option value="low">Low</option>
               <option value="normal" selected>Normal</option>
               <option value="high">High</option>
@@ -613,23 +550,67 @@
             </select>
           </div>
           
-          <!-- Company -->
+          <!-- Stage -->
           <div class="form-group">
-            <label for="company" class="form-label">Company</label>
-            <input type="text" id="company" name="company" class="form-input" value="Acme Industries" readonly style="background: var(--bg-hover);">
+            <label for="stage-select" class="form-label">Stage</label>
+            <select id="stage-select" name="stage_id" class="form-select">
+              <option value="">Select stage</option>
+              <!-- Populated by JavaScript -->
+            </select>
           </div>
           
-          <!-- Notes & Instructions -->
+          <!-- Scheduled Date -->
+          <div class="form-group">
+            <label for="scheduled-date" class="form-label">Scheduled Date</label>
+            <input type="datetime-local" id="scheduled-date" name="scheduled_date" class="form-input">
+          </div>
+          
+          <!-- Deadline -->
+          <div class="form-group">
+            <label for="deadline" class="form-label">Deadline</label>
+            <input type="datetime-local" id="deadline" name="deadline" class="form-input">
+          </div>
+          
+          <!-- Duration -->
+          <div class="form-group">
+            <label for="duration-hours" class="form-label">Duration (hours)</label>
+            <input type="number" id="duration-hours" name="duration_hours" class="form-input" min="0.5" step="0.5" placeholder="e.g., 4">
+          </div>
+          
+          <!-- Requester Name -->
+          <div class="form-group">
+            <label for="requester-name" class="form-label">Requester Name</label>
+            <input type="text" id="requester-name" name="requester_name" class="form-input" placeholder="Enter requester name">
+          </div>
+          
+          <!-- Requester Email -->
+          <div class="form-group">
+            <label for="requester-email" class="form-label">Requester Email</label>
+            <input type="email" id="requester-email" name="requester_email" class="form-input" placeholder="email@example.com">
+          </div>
+          
+          <!-- Description -->
           <div class="form-group full-width">
-            <label for="notes" class="form-label">Notes & Instructions</label>
+            <label for="request-description" class="form-label">Description</label>
             <textarea 
-              id="notes" 
-              name="notes" 
+              id="request-description" 
+              name="description" 
               class="form-textarea" 
-              placeholder="Add any notes, safety instructions, or guidelines for this maintenance request..."
-              rows="4"
+              placeholder="Describe the maintenance issue or work required..."
+              rows="3"
             ></textarea>
-            <span class="form-hint">Include any safety precautions, required tools, or special instructions</span>
+          </div>
+          
+          <!-- Technician Notes -->
+          <div class="form-group full-width">
+            <label for="technician-notes" class="form-label">Technician Notes</label>
+            <textarea 
+              id="technician-notes" 
+              name="technician_notes" 
+              class="form-textarea" 
+              placeholder="Add any technical notes or special instructions..."
+              rows="2"
+            ></textarea>
           </div>
         </div>
       </form>
@@ -885,4 +866,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 </script>
+
+<!-- Include Requests API Integration -->
+<script src="{{ url_for('static', filename='js/requests.js') }}"></script>
 {% endblock %}

@@ -600,20 +600,41 @@ let currentDate = new Date();
 let currentView = 'month';
 let selectedDate = null;
 
-// Sample events data
-const events = [
-  { id: 1, title: 'Hydraulic Press #7', date: '2025-12-27', time: '14:00', duration: 4, priority: 'urgent', type: 'corrective', team: 'Team Alpha', technician: 'Mike Wilson' },
-  { id: 2, title: 'Generator Unit 1', date: '2025-12-28', time: '09:00', duration: 4, priority: 'normal', type: 'preventive', team: 'Team Beta', technician: 'John Davis' },
-  { id: 3, title: 'Robotic Arm Unit 5', date: '2025-12-30', time: '08:00', duration: 6, priority: 'normal', type: 'preventive', team: 'Team Alpha', technician: 'John Davis' },
-  { id: 4, title: 'HVAC System B2', date: '2026-01-02', time: '10:00', duration: 3, priority: 'low', type: 'preventive', team: 'Team Gamma', technician: 'Sarah Connor' },
-  { id: 5, title: 'Conveyor Belt A3', date: '2025-12-26', time: '10:00', duration: 6, priority: 'high', type: 'corrective', team: 'Team Alpha', technician: 'Mike Wilson' },
-  { id: 6, title: 'CNC Machine #12', date: '2025-12-25', time: '11:00', duration: 3, priority: 'normal', type: 'corrective', team: 'Team Beta', technician: 'Mike Wilson' },
-  { id: 7, title: 'Assembly Line Motor', date: '2025-12-29', time: '13:00', duration: 2, priority: 'high', type: 'inspection', team: 'Team Gamma', technician: 'James Brown' },
-];
+// Events loaded from API
+let events = [];
+
+// Load events from API
+async function loadEvents() {
+  try {
+    const data = await GearGuardAPI.requests.getAll();
+    const requests = data.requests || data || [];
+    
+    // Convert maintenance requests to calendar events
+    events = requests.map(req => ({
+      id: req.id,
+      title: req.equipment?.name || req.name || 'Maintenance Request',
+      date: req.scheduled_date ? req.scheduled_date.split('T')[0] : formatDateStr(new Date()),
+      time: req.scheduled_date ? req.scheduled_date.split('T')[1]?.substring(0, 5) || '09:00' : '09:00',
+      duration: req.duration || 2,
+      priority: req.priority === 'high' ? 'urgent' : (req.priority || 'normal'),
+      type: req.maintenance_type || 'corrective',
+      team: req.team?.name || 'Unassigned',
+      technician: req.requester_name || 'Unassigned',
+      requestName: req.name,
+      stage: req.stage?.name
+    }));
+    
+    updateView();
+  } catch (error) {
+    console.error('Failed to load events:', error);
+    events = [];
+    updateView();
+  }
+}
 
 // Initialize calendar
 function initCalendar() {
-  renderCalendar();
+  loadEvents();
   updateTitle();
 }
 
