@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Email Template: Maintenance Request Created -->
+    <record id="mail_template_maintenance_request_created" model="mail.template">
+        <field name="name">GearGuard: Maintenance Request Created</field>
+        <field name="model_id" ref="model_gearguard_maintenance_request"/>
+        <field name="subject">New Maintenance Request: {{ object.reference }} - {{ object.name }}</field>
+        <field name="email_from">{{ (object.request_user_id.email or user.email) }}</field>
+        <field name="email_to">{{ object.maintenance_team_id.team_leader_id.email if object.maintenance_team_id.team_leader_id else '' }}</field>
+        <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+        Dear <t t-out="object.maintenance_team_id.team_leader_id.name or 'Team Leader'"/>,
+        <br/><br/>
+        A new maintenance request has been created and requires attention.
+        <br/><br/>
+        <strong>Request Details:</strong>
+        <br/>
+        <ul>
+            <li><strong>Reference:</strong> <t t-out="object.reference"/></li>
+            <li><strong>Subject:</strong> <t t-out="object.name"/></li>
+            <li><strong>Equipment:</strong> <t t-out="object.equipment_id.name"/></li>
+            <li><strong>Category:</strong> <t t-out="object.category_id.name or 'N/A'"/></li>
+            <li><strong>Request Type:</strong> <t t-out="'Corrective (Breakdown)' if object.request_type == 'corrective' else 'Preventive (Checkup)'"/></li>
+            <li><strong>Priority:</strong> <t t-out="dict(object._fields['priority'].selection).get(object.priority)"/></li>
+            <li><strong>Requested By:</strong> <t t-out="object.request_user_id.name"/></li>
+            <t t-if="object.scheduled_date">
+                <li><strong>Scheduled Date:</strong> <t t-out="object.scheduled_date"/></li>
+            </t>
+        </ul>
+        <br/>
+        <t t-if="object.description">
+            <strong>Description:</strong><br/>
+            <t t-out="object.description"/>
+            <br/><br/>
+        </t>
+        Please assign a technician and begin work as soon as possible.
+        <br/><br/>
+        Best regards,<br/>
+        GearGuard Maintenance System
+    </p>
+</div>
+        </field>
+        <field name="auto_delete" eval="True"/>
+    </record>
+
+    <!-- Email Template: Maintenance Request Assigned -->
+    <record id="mail_template_maintenance_request_assigned" model="mail.template">
+        <field name="name">GearGuard: Maintenance Request Assigned</field>
+        <field name="model_id" ref="model_gearguard_maintenance_request"/>
+        <field name="subject">Maintenance Request Assigned: {{ object.reference }} - {{ object.name }}</field>
+        <field name="email_from">{{ (user.email) }}</field>
+        <field name="email_to">{{ object.technician_id.email if object.technician_id else '' }}</field>
+        <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+        Dear <t t-out="object.technician_id.name or 'Technician'"/>,
+        <br/><br/>
+        You have been assigned to a maintenance request.
+        <br/><br/>
+        <strong>Request Details:</strong>
+        <br/>
+        <ul>
+            <li><strong>Reference:</strong> <t t-out="object.reference"/></li>
+            <li><strong>Subject:</strong> <t t-out="object.name"/></li>
+            <li><strong>Equipment:</strong> <t t-out="object.equipment_id.name"/> (<t t-out="object.equipment_id.serial_number or 'No S/N'"/>)</li>
+            <li><strong>Location:</strong> <t t-out="object.equipment_id.location or 'N/A'"/></li>
+            <li><strong>Request Type:</strong> <t t-out="'Corrective (Breakdown)' if object.request_type == 'corrective' else 'Preventive (Checkup)'"/></li>
+            <li><strong>Priority:</strong> <t t-out="dict(object._fields['priority'].selection).get(object.priority)"/></li>
+            <t t-if="object.scheduled_date">
+                <li><strong>Scheduled Date:</strong> <t t-out="object.scheduled_date"/></li>
+            </t>
+        </ul>
+        <br/>
+        <t t-if="object.description">
+            <strong>Description:</strong><br/>
+            <t t-out="object.description"/>
+            <br/><br/>
+        </t>
+        Please begin work as scheduled.
+        <br/><br/>
+        Best regards,<br/>
+        GearGuard Maintenance System
+    </p>
+</div>
+        </field>
+        <field name="auto_delete" eval="True"/>
+    </record>
+
+    <!-- Email Template: Maintenance Request Completed -->
+    <record id="mail_template_maintenance_request_completed" model="mail.template">
+        <field name="name">GearGuard: Maintenance Request Completed</field>
+        <field name="model_id" ref="model_gearguard_maintenance_request"/>
+        <field name="subject">Maintenance Completed: {{ object.reference }} - {{ object.name }}</field>
+        <field name="email_from">{{ (object.technician_id.email or user.email) }}</field>
+        <field name="email_to">{{ object.request_user_id.email if object.request_user_id else '' }}</field>
+        <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+        Dear <t t-out="object.request_user_id.name or 'User'"/>,
+        <br/><br/>
+        Your maintenance request has been completed.
+        <br/><br/>
+        <strong>Request Details:</strong>
+        <br/>
+        <ul>
+            <li><strong>Reference:</strong> <t t-out="object.reference"/></li>
+            <li><strong>Subject:</strong> <t t-out="object.name"/></li>
+            <li><strong>Equipment:</strong> <t t-out="object.equipment_id.name"/></li>
+            <li><strong>Completed By:</strong> <t t-out="object.technician_id.name or 'N/A'"/></li>
+            <li><strong>Hours Spent:</strong> <t t-out="object.hours_spent"/> hours</li>
+            <li><strong>Close Date:</strong> <t t-out="object.close_date"/></li>
+        </ul>
+        <br/>
+        <t t-if="object.resolution">
+            <strong>Resolution:</strong><br/>
+            <t t-out="object.resolution"/>
+            <br/><br/>
+        </t>
+        Thank you for using GearGuard Maintenance System.
+        <br/><br/>
+        Best regards,<br/>
+        GearGuard Maintenance System
+    </p>
+</div>
+        </field>
+        <field name="auto_delete" eval="True"/>
+    </record>
+
+    <!-- Email Template: Overdue Reminder -->
+    <record id="mail_template_maintenance_overdue" model="mail.template">
+        <field name="name">GearGuard: Overdue Maintenance Reminder</field>
+        <field name="model_id" ref="model_gearguard_maintenance_request"/>
+        <field name="subject">⚠️ OVERDUE: {{ object.reference }} - {{ object.name }}</field>
+        <field name="email_from">{{ (user.email) }}</field>
+        <field name="email_to">{{ object.technician_id.email if object.technician_id else (object.maintenance_team_id.team_leader_id.email if object.maintenance_team_id.team_leader_id else '') }}</field>
+        <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+        <strong style="color: #dc3545;">⚠️ ATTENTION: Overdue Maintenance Request</strong>
+        <br/><br/>
+        The following maintenance request is overdue and requires immediate attention:
+        <br/><br/>
+        <ul>
+            <li><strong>Reference:</strong> <t t-out="object.reference"/></li>
+            <li><strong>Subject:</strong> <t t-out="object.name"/></li>
+            <li><strong>Equipment:</strong> <t t-out="object.equipment_id.name"/></li>
+            <li><strong>Scheduled Date:</strong> <t t-out="object.scheduled_date"/></li>
+            <li><strong>Assigned To:</strong> <t t-out="object.technician_id.name or 'Unassigned'"/></li>
+            <li><strong>Current Stage:</strong> <t t-out="object.stage_id.name"/></li>
+        </ul>
+        <br/>
+        Please take immediate action to complete this request.
+        <br/><br/>
+        Best regards,<br/>
+        GearGuard Maintenance System
+    </p>
+</div>
+        </field>
+        <field name="auto_delete" eval="True"/>
+    </record>
+</odoo>

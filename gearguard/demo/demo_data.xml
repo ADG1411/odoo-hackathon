@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Demo Maintenance Teams -->
+        <record id="team_mechanics" model="gearguard.maintenance.team">
+            <field name="name">Mechanics</field>
+            <field name="specialty">Mechanical Systems</field>
+            <field name="color">1</field>
+            <field name="description">Team specialized in mechanical repairs and maintenance.</field>
+        </record>
+
+        <record id="team_electricians" model="gearguard.maintenance.team">
+            <field name="name">Electricians</field>
+            <field name="specialty">Electrical Systems</field>
+            <field name="color">2</field>
+            <field name="description">Team specialized in electrical repairs and wiring.</field>
+        </record>
+
+        <record id="team_it_support" model="gearguard.maintenance.team">
+            <field name="name">IT Support</field>
+            <field name="specialty">Computer &amp; Network</field>
+            <field name="color">4</field>
+            <field name="description">Team specialized in computer hardware, software, and network issues.</field>
+        </record>
+
+        <!-- Demo Equipment Categories -->
+        <record id="category_machinery" model="gearguard.equipment.category">
+            <field name="name">Machinery</field>
+            <field name="code">MACH</field>
+            <field name="maintenance_team_id" ref="team_mechanics"/>
+            <field name="description">Heavy machinery and production equipment.</field>
+        </record>
+
+        <record id="category_vehicles" model="gearguard.equipment.category">
+            <field name="name">Vehicles</field>
+            <field name="code">VEH</field>
+            <field name="maintenance_team_id" ref="team_mechanics"/>
+            <field name="description">Company vehicles and transport equipment.</field>
+        </record>
+
+        <record id="category_computers" model="gearguard.equipment.category">
+            <field name="name">Computers</field>
+            <field name="code">IT</field>
+            <field name="maintenance_team_id" ref="team_it_support"/>
+            <field name="description">Computers, laptops, and IT equipment.</field>
+        </record>
+
+        <record id="category_electrical" model="gearguard.equipment.category">
+            <field name="name">Electrical Equipment</field>
+            <field name="code">ELEC</field>
+            <field name="maintenance_team_id" ref="team_electricians"/>
+            <field name="description">Electrical panels, generators, and related equipment.</field>
+        </record>
+
+        <record id="category_office" model="gearguard.equipment.category">
+            <field name="name">Office Equipment</field>
+            <field name="code">OFF</field>
+            <field name="maintenance_team_id" ref="team_it_support"/>
+            <field name="description">Printers, copiers, and other office equipment.</field>
+        </record>
+
+        <!-- Demo Equipment -->
+        <record id="equipment_cnc_01" model="gearguard.equipment">
+            <field name="name">CNC Machine 01</field>
+            <field name="serial_number">CNC-2024-001</field>
+            <field name="category_id" ref="category_machinery"/>
+            <field name="maintenance_team_id" ref="team_mechanics"/>
+            <field name="location">Production Hall A - Section 1</field>
+            <field name="purchase_date">2022-06-15</field>
+            <field name="purchase_value">150000.00</field>
+            <field name="warranty_expiration_date">2027-06-15</field>
+            <field name="model">VMC-850</field>
+            <field name="manufacturer">Haas Automation</field>
+            <field name="equipment_status">operational</field>
+        </record>
+
+        <record id="equipment_cnc_02" model="gearguard.equipment">
+            <field name="name">CNC Machine 02</field>
+            <field name="serial_number">CNC-2024-002</field>
+            <field name="category_id" ref="category_machinery"/>
+            <field name="maintenance_team_id" ref="team_mechanics"/>
+            <field name="location">Production Hall A - Section 2</field>
+            <field name="purchase_date">2023-01-10</field>
+            <field name="purchase_value">175000.00</field>
+            <field name="warranty_expiration_date">2028-01-10</field>
+            <field name="model">VMC-1100</field>
+            <field name="manufacturer">Haas Automation</field>
+            <field name="equipment_status">operational</field>
+        </record>
+
+        <record id="equipment_forklift_01" model="gearguard.equipment">
+            <field name="name">Forklift 01</field>
+            <field name="serial_number">FL-2023-001</field>
+            <field name="category_id" ref="category_vehicles"/>
+            <field name="maintenance_team_id" ref="team_mechanics"/>
+            <field name="location">Warehouse B</field>
+            <field name="purchase_date">2023-03-20</field>
+            <field name="purchase_value">35000.00</field>
+            <field name="warranty_expiration_date">2026-03-20</field>
+            <field name="model">H50FT</field>
+            <field name="manufacturer">Toyota</field>
+            <field name="equipment_status">operational</field>
+        </record>
+
+        <record id="equipment_laptop_01" model="gearguard.equipment">
+            <field name="name">Dell Laptop - Engineering</field>
+            <field name="serial_number">LT-2024-001</field>
+            <field name="category_id" ref="category_computers"/>
+            <field name="maintenance_team_id" ref="team_it_support"/>
+            <field name="location">Engineering Office</field>
+            <field name="purchase_date">2024-01-15</field>
+            <field name="purchase_value">1500.00</field>
+            <field name="warranty_expiration_date">2027-01-15</field>
+            <field name="model">Precision 5570</field>
+            <field name="manufacturer">Dell</field>
+            <field name="equipment_status">operational</field>
+        </record>
+
+        <record id="equipment_server_01" model="gearguard.equipment">
+            <field name="name">Main Server</field>
+            <field name="serial_number">SRV-2023-001</field>
+            <field name="category_id" ref="category_computers"/>
+            <field name="maintenance_team_id" ref="team_it_support"/>
+            <field name="location">Server Room - Rack A1</field>
+            <field name="purchase_date">2023-06-01</field>
+            <field name="purchase_value">12000.00</field>
+            <field name="warranty_expiration_date">2026-06-01</field>
+            <field name="model">PowerEdge R750</field>
+            <field name="manufacturer">Dell</field>
+            <field name="equipment_status">operational</field>
+        </record>
+
+        <record id="equipment_printer_01" model="gearguard.equipment">
+            <field name="name">Office Printer 01</field>
+            <field name="serial_number">PRT-2024-001</field>
+            <field name="category_id" ref="category_office"/>
+            <field name="maintenance_team_id" ref="team_it_support"/>
+            <field name="location">Admin Office</field>
+            <field name="purchase_date">2024-02-01</field>
+            <field name="purchase_value">800.00</field>
+            <field name="warranty_expiration_date">2026-02-01</field>
+            <field name="model">LaserJet Pro M404dn</field>
+            <field name="manufacturer">HP</field>
+            <field name="equipment_status">operational</field>
+        </record>
+
+        <record id="equipment_generator_01" model="gearguard.equipment">
+            <field name="name">Backup Generator</field>
+            <field name="serial_number">GEN-2022-001</field>
+            <field name="category_id" ref="category_electrical"/>
+            <field name="maintenance_team_id" ref="team_electricians"/>
+            <field name="location">Utility Building</field>
+            <field name="purchase_date">2022-01-15</field>
+            <field name="purchase_value">25000.00</field>
+            <field name="warranty_expiration_date">2025-01-15</field>
+            <field name="model">QT070</field>
+            <field name="manufacturer">Generac</field>
+            <field name="equipment_status">operational</field>
+        </record>
+
+        <!-- Demo Maintenance Requests -->
+        <record id="request_cnc_oil_leak" model="gearguard.maintenance.request">
+            <field name="name">Oil Leak - Hydraulic System</field>
+            <field name="equipment_id" ref="equipment_cnc_01"/>
+            <field name="maintenance_team_id" ref="team_mechanics"/>
+            <field name="request_type">corrective</field>
+            <field name="priority">2</field>
+            <field name="stage_id" ref="stage_new"/>
+            <field name="description">Noticed oil leak from the hydraulic system near the spindle. Needs immediate attention before it affects production.</field>
+        </record>
+
+        <record id="request_forklift_maintenance" model="gearguard.maintenance.request">
+            <field name="name">Routine Maintenance - 500 Hour Service</field>
+            <field name="equipment_id" ref="equipment_forklift_01"/>
+            <field name="maintenance_team_id" ref="team_mechanics"/>
+            <field name="request_type">preventive</field>
+            <field name="priority">1</field>
+            <field name="stage_id" ref="stage_new"/>
+            <field name="scheduled_date" eval="(datetime.datetime.now() + datetime.timedelta(days=3)).strftime('%Y-%m-%d 09:00:00')"/>
+            <field name="duration">4.0</field>
+            <field name="description">Regular 500-hour service including oil change, filter replacement, and safety inspection.</field>
+        </record>
+
+        <record id="request_laptop_screen" model="gearguard.maintenance.request">
+            <field name="name">Screen Flickering Issue</field>
+            <field name="equipment_id" ref="equipment_laptop_01"/>
+            <field name="maintenance_team_id" ref="team_it_support"/>
+            <field name="request_type">corrective</field>
+            <field name="priority">1</field>
+            <field name="stage_id" ref="stage_in_progress"/>
+            <field name="description">User reports screen flickering when running graphics-intensive applications. May need display cable replacement.</field>
+        </record>
+
+        <record id="request_printer_jam" model="gearguard.maintenance.request">
+            <field name="name">Paper Jam - Frequent Jams</field>
+            <field name="equipment_id" ref="equipment_printer_01"/>
+            <field name="maintenance_team_id" ref="team_it_support"/>
+            <field name="request_type">corrective</field>
+            <field name="priority">1</field>
+            <field name="stage_id" ref="stage_new"/>
+            <field name="description">Printer is experiencing frequent paper jams. Rollers may need cleaning or replacement.</field>
+        </record>
+
+        <record id="request_generator_checkup" model="gearguard.maintenance.request">
+            <field name="name">Monthly Generator Test</field>
+            <field name="equipment_id" ref="equipment_generator_01"/>
+            <field name="maintenance_team_id" ref="team_electricians"/>
+            <field name="request_type">preventive</field>
+            <field name="priority">1</field>
+            <field name="stage_id" ref="stage_new"/>
+            <field name="scheduled_date" eval="(datetime.datetime.now() + datetime.timedelta(days=7)).strftime('%Y-%m-%d 14:00:00')"/>
+            <field name="duration">2.0</field>
+            <field name="description">Monthly test run and inspection of backup generator. Check fuel levels, battery, and transfer switch.</field>
+        </record>
+
+        <record id="request_server_maintenance" model="gearguard.maintenance.request">
+            <field name="name">Quarterly Server Maintenance</field>
+            <field name="equipment_id" ref="equipment_server_01"/>
+            <field name="maintenance_team_id" ref="team_it_support"/>
+            <field name="request_type">preventive</field>
+            <field name="priority">2</field>
+            <field name="stage_id" ref="stage_repaired"/>
+            <field name="scheduled_date" eval="(datetime.datetime.now() - datetime.timedelta(days=5)).strftime('%Y-%m-%d 22:00:00')"/>
+            <field name="duration">3.0</field>
+            <field name="hours_spent">2.5</field>
+            <field name="close_date" eval="(datetime.datetime.now() - datetime.timedelta(days=4)).strftime('%Y-%m-%d 01:30:00')"/>
+            <field name="description">Quarterly maintenance: firmware updates, dust cleaning, temperature checks, and backup verification.</field>
+            <field name="resolution">Completed firmware updates, cleaned dust from fans and heat sinks, verified all backups successful. Temperature readings normal.</field>
+        </record>
+    </data>
+</odoo>

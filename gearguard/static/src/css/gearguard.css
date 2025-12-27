@@ -1,0 +1,99 @@
+/* GearGuard Custom Styles */
+
+/* Kanban Card Styles */
+.o_kanban_card .o_kanban_ribbon_wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    overflow: hidden;
+    height: 50px;
+    pointer-events: none;
+}
+
+.o_kanban_card .o_kanban_ribbon {
+    position: absolute;
+    padding: 2px 20px;
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    transform: rotate(-45deg);
+    top: 10px;
+    left: -25px;
+    width: 100px;
+    text-align: center;
+}
+
+.o_kanban_card .o_kanban_ribbon.o_kanban_ribbon_top_left {
+    transform: rotate(-45deg);
+}
+
+/* Overdue Request Styling */
+.gearguard_request_overdue {
+    border-left: 4px solid #dc3545 !important;
+}
+
+/* Equipment Status Colors */
+.gearguard_status_operational {
+    color: #28a745;
+}
+
+.gearguard_status_maintenance {
+    color: #ffc107;
+}
+
+.gearguard_status_scrapped {
+    color: #dc3545;
+}
+
+/* Team Dashboard Kanban */
+.o_maintenance_team_kanban .o_kanban_card_content {
+    padding: 10px;
+}
+
+.o_maintenance_team_kanban .o_kanban_primary_left {
+    padding-right: 10px;
+}
+
+.o_maintenance_team_kanban .o_kanban_primary_right {
+    text-align: right;
+}
+
+/* Priority Stars */
+.o_priority_star {
+    color: #f0ad4e;
+}
+
+/* Calendar Event Colors */
+.fc-event.fc-event-corrective {
+    background-color: #dc3545 !important;
+    border-color: #dc3545 !important;
+}
+
+.fc-event.fc-event-preventive {
+    background-color: #17a2b8 !important;
+    border-color: #17a2b8 !important;
+}
+
+/* Smart Button Styling */
+.oe_stat_button .o_stat_info .o_stat_value {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+/* Form View Enhancements */
+.o_form_view .o_group .o_inner_group {
+    border-radius: 4px;
+    padding: 10px;
+}
+
+/* Badge Styles for Request Types */
+.badge.text-bg-corrective {
+    background-color: #dc3545 !important;
+    color: white !important;
+}
+
+.badge.text-bg-preventive {
+    background-color: #17a2b8 !important;
+    color: white !important;
+}

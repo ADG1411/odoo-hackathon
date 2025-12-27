@@ -1,0 +1,91 @@
+# GearGuard: The Ultimate Maintenance Tracker
+
+## Overview
+
+GearGuard is a comprehensive Odoo maintenance management module that allows companies to track their assets (machines, vehicles, computers) and manage maintenance requests for those assets.
+
+## Key Features
+
+### Equipment Management
+- **Equipment Tracking**: Track equipment by Department and Employee
+- **Ownership**: Each equipment can be assigned to a department or employee
+- **Maintenance Responsibility**: Dedicated Maintenance Team and default technician for each equipment
+- **Key Fields**: Equipment Name, Serial Number, Purchase Date, Warranty Information, Location
+
+### Maintenance Teams
+- **Multiple Teams**: Define specialized teams (Mechanics, Electricians, IT Support)
+- **Team Members**: Link specific users (Technicians) to teams
+- **Workflow Logic**: Requests created for a specific team can only be handled by team members
+
+### Maintenance Requests
+- **Request Types**:
+  - **Corrective**: Unplanned repairs (Breakdowns)
+  - **Preventive**: Planned maintenance (Routine Checkups)
+- **Key Fields**: Subject, Equipment, Scheduled Date, Duration
+
+## Functional Workflows
+
+### Flow 1: The Breakdown
+1. Any user can create a request
+2. When selecting Equipment, the system auto-fills:
+   - Equipment category
+   - Maintenance Team
+3. Request starts in "New" stage
+4. Manager/technician assigns themselves
+5. Stage moves to "In Progress"
+6. Technician records Hours Spent and moves to "Repaired"
+
+### Flow 2: The Routine Checkup
+1. Manager creates request with type "Preventive"
+2. User sets Scheduled Date
+3. Request appears on Calendar View
+
+## User Interface
+
+### Kanban Board
+- Primary workspace for technicians
+- Grouped by Stages (New | In Progress | Repaired | Scrap)
+- Drag & Drop functionality
+- Visual Indicators:
+  - Technician avatar
+  - Overdue status (red indicator)
+
+### Calendar View
+- Display all Preventive maintenance requests
+- Click date to schedule new maintenance
+
+### Pivot/Graph Reports
+- Number of Requests per Team
+- Number of Requests per Equipment Category
+
+## Smart Features
+
+### Smart Buttons
+- Equipment Form: "Maintenance" button showing open request count
+- Opens filtered list of requests for that equipment
+
+### Scrap Logic
+- Moving request to Scrap stage marks equipment as scrapped
+- Equipment is flagged as no longer usable
+
+## Installation
+
+1. Copy the `gearguard` folder to your Odoo addons directory
+2. Update the module list in Odoo
+3. Install GearGuard from the Apps menu
+
+## Security Groups
+
+- **User**: Can view equipment and create requests
+- **Technician**: Can manage requests assigned to them
+- **Manager**: Full access to all features
+
+## Dependencies
+
+- base
+- hr (Human Resources)
+- mail (Discuss)
+
+## License
+
+LGPL-3

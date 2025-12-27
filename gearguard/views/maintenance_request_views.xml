@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Maintenance Request Kanban View (Primary workspace for technicians) -->
+    <record id="view_maintenance_request_kanban" model="ir.ui.view">
+        <field name="name">gearguard.maintenance.request.kanban</field>
+        <field name="model">gearguard.maintenance.request</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="stage_id" class="o_kanban_small_column o_kanban_mobile" on_create="quick_create" quick_create_view="gearguard.view_maintenance_request_kanban_quick_create">
+                <field name="stage_id"/>
+                <field name="color"/>
+                <field name="priority"/>
+                <field name="technician_id"/>
+                <field name="equipment_id"/>
+                <field name="maintenance_team_id"/>
+                <field name="is_overdue"/>
+                <field name="scheduled_date"/>
+                <field name="request_type"/>
+                <field name="kanban_state"/>
+                <field name="reference"/>
+                <progressbar field="kanban_state" colors='{"done": "success", "blocked": "danger"}'/>
+                <templates>
+                    <t t-name="kanban-menu">
+                        <a role="menuitem" type="set_cover" class="dropdown-item" data-field="1">Set Cover Image</a>
+                        <a role="menuitem" type="delete" class="dropdown-item">Delete</a>
+                        <ul class="oe_kanban_colorpicker" data-field="color"/>
+                    </t>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="#{!selection_mode ? kanban_color(record.color.raw_value) : ''} oe_kanban_global_click oe_kanban_card">
+                            <!-- Overdue indicator (red strip) -->
+                            <div t-if="record.is_overdue.raw_value" class="o_kanban_ribbon_wrapper">
+                                <div class="o_kanban_ribbon o_kanban_ribbon_top_left bg-danger">
+                                    <span class="text-white">OVERDUE</span>
+                                </div>
+                            </div>
+                            <div class="oe_kanban_content">
+                                <div class="o_kanban_record_top">
+                                    <div class="o_kanban_record_headings">
+                                        <span class="text-muted small me-1">
+                                            <field name="reference"/>
+                                        </span>
+                                        <strong class="o_kanban_record_title">
+                                            <field name="name"/>
+                                        </strong>
+                                    </div>
+                                    <div class="o_dropdown_kanban dropdown">
+                                        <a role="button" class="dropdown-toggle o-no-caret btn" data-bs-toggle="dropdown" href="#" aria-label="Dropdown menu" title="Dropdown menu">
+                                            <span class="fa fa-ellipsis-v"/>
+                                        </a>
+                                        <div class="dropdown-menu" role="menu">
+                                            <t t-if="widget.editable"><a role="menuitem" type="edit" class="dropdown-item">Edit</a></t>
+                                            <t t-if="widget.deletable"><a role="menuitem" type="delete" class="dropdown-item">Delete</a></t>
+                                            <ul class="oe_kanban_colorpicker" data-field="color"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="o_kanban_record_body">
+                                    <div class="d-flex flex-wrap gap-1 mb-2">
+                                        <!-- Request Type Badge -->
+                                        <span t-if="record.request_type.raw_value == 'corrective'" class="badge text-bg-danger">
+                                            <i class="fa fa-exclamation-triangle me-1"/>Breakdown
+                                        </span>
+                                        <span t-if="record.request_type.raw_value == 'preventive'" class="badge text-bg-info">
+                                            <i class="fa fa-calendar-check-o me-1"/>Checkup
+                                        </span>
+                                        <!-- Priority -->
+                                        <field name="priority" widget="priority"/>
+                                    </div>
+                                    <div class="mb-1">
+                                        <i class="fa fa-cog me-1 text-muted"/>
+                                        <field name="equipment_id"/>
+                                    </div>
+                                    <div t-if="record.maintenance_team_id.raw_value" class="mb-1">
+                                        <i class="fa fa-users me-1 text-muted"/>
+                                        <field name="maintenance_team_id"/>
+                                    </div>
+                                    <div t-if="record.scheduled_date.raw_value" class="mb-1">
+                                        <i class="fa fa-clock-o me-1 text-muted"/>
+                                        <field name="scheduled_date" widget="datetime"/>
+                                    </div>
+                                </div>
+                                <div class="o_kanban_record_bottom">
+                                    <div class="oe_kanban_bottom_left">
+                                        <field name="activity_ids" widget="kanban_activity"/>
+                                    </div>
+                                    <div class="oe_kanban_bottom_right">
+                                        <!-- Technician Avatar -->
+                                        <field name="technician_id" widget="many2one_avatar_user"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Kanban Quick Create View -->
+    <record id="view_maintenance_request_kanban_quick_create" model="ir.ui.view">
+        <field name="name">gearguard.maintenance.request.kanban.quick.create</field>
+        <field name="model">gearguard.maintenance.request</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="name" placeholder="Subject (e.g., Leaking Oil)"/>
+                    <field name="equipment_id" placeholder="Select Equipment"/>
+                </group>
+            </form>
+        </field>
+    </record>
+
+    <!-- Maintenance Request Tree View -->
+    <record id="view_maintenance_request_tree" model="ir.ui.view">
+        <field name="name">gearguard.maintenance.request.tree</field>
+        <field name="model">gearguard.maintenance.request</field>
+        <field name="arch" type="xml">
+            <tree decoration-danger="is_overdue == True" decoration-muted="stage_id.done == True">
+                <field name="reference" optional="show"/>
+                <field name="name"/>
+                <field name="equipment_id"/>
+                <field name="category_id"/>
+                <field name="request_type" widget="badge" decoration-danger="request_type == 'corrective'" decoration-info="request_type == 'preventive'"/>
+                <field name="priority" widget="priority"/>
+                <field name="maintenance_team_id"/>
+                <field name="technician_id" widget="many2one_avatar_user"/>
+                <field name="scheduled_date"/>
+                <field name="stage_id" widget="badge"/>
+                <field name="is_overdue" column_invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Maintenance Request Form View -->
+    <record id="view_maintenance_request_form" model="ir.ui.view">
+        <field name="name">gearguard.maintenance.request.form</field>
+        <field name="model">gearguard.maintenance.request</field>
+        <field name="arch" type="xml">
+            <form string="Maintenance Request">
+                <header>
+                    <button name="action_assign_to_me" type="object" string="Assign to Me" class="btn-primary" invisible="technician_id"/>
+                    <button name="action_start_repair" type="object" string="Start Repair" class="btn-primary" invisible="stage_id.done"/>
+                    <button name="action_mark_repaired" type="object" string="Mark as Repaired" class="btn-success" invisible="stage_id.done"/>
+                    <button name="action_scrap" type="object" string="Scrap Equipment" class="btn-danger" confirm="Are you sure you want to scrap the equipment? This cannot be undone."/>
+                    <field name="stage_id" widget="statusbar" options="{'clickable': '1', 'fold_field': 'fold'}"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box"/>
+                    <widget name="web_ribbon" title="Overdue" bg_color="text-bg-danger" invisible="not is_overdue"/>
+                    <div class="oe_title">
+                        <label for="reference"/>
+                        <h1>
+                            <field name="reference" readonly="1" class="me-2"/>
+                        </h1>
+                        <label for="name"/>
+                        <h2>
+                            <field name="name" placeholder="Subject (e.g., Leaking Oil)"/>
+                        </h2>
+                    </div>
+                    <group>
+                        <group string="Request Details">
+                            <field name="request_type" widget="radio" options="{'horizontal': true}"/>
+                            <field name="priority" widget="priority"/>
+                            <field name="request_user_id" widget="many2one_avatar_user"/>
+                            <field name="request_date"/>
+                            <field name="kanban_state" widget="state_selection"/>
+                        </group>
+                        <group string="Equipment">
+                            <field name="equipment_id" options="{'no_create': True}"/>
+                            <field name="category_id" readonly="1"/>
+                            <field name="equipment_serial" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Assignment">
+                            <field name="maintenance_team_id"/>
+                            <field name="team_member_ids" invisible="1"/>
+                            <field name="technician_id" widget="many2one_avatar_user" domain="[('id', 'in', team_member_ids)]"/>
+                        </group>
+                        <group string="Scheduling">
+                            <field name="scheduled_date"/>
+                            <field name="duration" widget="float_time"/>
+                            <field name="close_date" readonly="1"/>
+                            <field name="hours_spent" widget="float_time"/>
+                            <field name="is_overdue" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Description" name="description">
+                            <field name="description" placeholder="Describe the issue in detail..."/>
+                        </page>
+                        <page string="Resolution" name="resolution">
+                            <field name="resolution" placeholder="Describe how the issue was resolved..."/>
+                        </page>
+                        <page string="Internal Notes" name="internal_notes">
+                            <field name="internal_notes" placeholder="Internal notes for the team..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Maintenance Request Calendar View -->
+    <record id="view_maintenance_request_calendar" model="ir.ui.view">
+        <field name="name">gearguard.maintenance.request.calendar</field>
+        <field name="model">gearguard.maintenance.request</field>
+        <field name="arch" type="xml">
+            <calendar string="Maintenance Calendar" date_start="scheduled_date" date_stop="scheduled_date_end" date_delay="duration" color="maintenance_team_id" mode="month" quick_create="0" event_open_popup="1" event_limit="5">
+                <field name="name"/>
+                <field name="equipment_id"/>
+                <field name="maintenance_team_id"/>
+                <field name="technician_id" widget="many2one_avatar_user"/>
+                <field name="request_type"/>
+                <field name="stage_id"/>
+            </calendar>
+        </field>
+    </record>
+
+    <!-- Maintenance Request Pivot View -->
+    <record id="view_maintenance_request_pivot" model="ir.ui.view">
+        <field name="name">gearguard.maintenance.request.pivot</field>
+        <field name="model">gearguard.maintenance.request</field>
+        <field name="arch" type="xml">
+            <pivot string="Maintenance Analysis" display_quantity="true">
+                <field name="maintenance_team_id" type="row"/>
+                <field name="category_id" type="col"/>
+                <field name="hours_spent" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Maintenance Request Graph View -->
+    <record id="view_maintenance_request_graph" model="ir.ui.view">
+        <field name="name">gearguard.maintenance.request.graph</field>
+        <field name="model">gearguard.maintenance.request</field>
+        <field name="arch" type="xml">
+            <graph string="Maintenance Analysis" type="bar">
+                <field name="maintenance_team_id" type="row"/>
+                <field name="request_type" type="col"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Maintenance Request Search View -->
+    <record id="view_maintenance_request_search" model="ir.ui.view">
+        <field name="name">gearguard.maintenance.request.search</field>
+        <field name="model">gearguard.maintenance.request</field>
+        <field name="arch" type="xml">
+            <search string="Maintenance Requests">
+                <field name="reference"/>
+                <field name="name"/>
+                <field name="equipment_id"/>
+                <field name="category_id"/>
+                <field name="maintenance_team_id"/>
+                <field name="technician_id"/>
+                <field name="request_user_id"/>
+                <separator/>
+                <filter string="My Requests" name="filter_my_requests" domain="[('technician_id', '=', uid)]"/>
+                <filter string="Unassigned" name="filter_unassigned" domain="[('technician_id', '=', False)]"/>
+                <separator/>
+                <filter string="Corrective (Breakdown)" name="filter_corrective" domain="[('request_type', '=', 'corrective')]"/>
+                <filter string="Preventive (Checkup)" name="filter_preventive" domain="[('request_type', '=', 'preventive')]"/>
+                <separator/>
+                <filter string="Overdue" name="filter_overdue" domain="[('is_overdue', '=', True)]"/>
+                <filter string="Today" name="filter_today" domain="[('scheduled_date', '&gt;=', datetime.datetime.combine(context_today(), datetime.time(0,0,0))), ('scheduled_date', '&lt;=', datetime.datetime.combine(context_today(), datetime.time(23,59,59)))]"/>
+                <filter string="This Week" name="filter_this_week" domain="[('scheduled_date', '&gt;=', (context_today() - datetime.timedelta(days=context_today().weekday())).strftime('%Y-%m-%d')), ('scheduled_date', '&lt;', (context_today() + datetime.timedelta(days=7-context_today().weekday())).strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <filter string="Archived" name="filter_archived" domain="[('active', '=', False)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Stage" name="group_stage" context="{'group_by': 'stage_id'}"/>
+                    <filter string="Equipment" name="group_equipment" context="{'group_by': 'equipment_id'}"/>
+                    <filter string="Category" name="group_category" context="{'group_by': 'category_id'}"/>
+                    <filter string="Team" name="group_team" context="{'group_by': 'maintenance_team_id'}"/>
+                    <filter string="Technician" name="group_technician" context="{'group_by': 'technician_id'}"/>
+                    <filter string="Request Type" name="group_type" context="{'group_by': 'request_type'}"/>
+                    <filter string="Priority" name="group_priority" context="{'group_by': 'priority'}"/>
+                    <filter string="Scheduled Date" name="group_scheduled" context="{'group_by': 'scheduled_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Maintenance Request Action (Main Kanban Board) -->
+    <record id="action_maintenance_request" model="ir.actions.act_window">
+        <field name="name">Maintenance Requests</field>
+        <field name="res_model">gearguard.maintenance.request</field>
+        <field name="view_mode">kanban,tree,form,calendar,pivot,graph</field>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first maintenance request
+            </p>
+            <p>
+                Report equipment issues or schedule preventive maintenance.
+            </p>
+        </field>
+    </record>
+
+    <!-- Action: My Requests -->
+    <record id="action_maintenance_request_my" model="ir.actions.act_window">
+        <field name="name">My Requests</field>
+        <field name="res_model">gearguard.maintenance.request</field>
+        <field name="view_mode">kanban,tree,form,calendar</field>
+        <field name="context">{'search_default_filter_my_requests': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No requests assigned to you
+            </p>
+        </field>
+    </record>
+
+    <!-- Action: Preventive Maintenance Calendar -->
+    <record id="action_maintenance_request_calendar" model="ir.actions.act_window">
+        <field name="name">Maintenance Calendar</field>
+        <field name="res_model">gearguard.maintenance.request</field>
+        <field name="view_mode">calendar,kanban,tree,form</field>
+        <field name="context">{'search_default_filter_preventive': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Schedule your first preventive maintenance
+            </p>
+        </field>
+    </record>
+
+    <!-- Action: Maintenance Reports -->
+    <record id="action_maintenance_request_report" model="ir.actions.act_window">
+        <field name="name">Maintenance Reports</field>
+        <field name="res_model">gearguard.maintenance.request</field>
+        <field name="view_mode">pivot,graph,tree</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No maintenance data to analyze
+            </p>
+        </field>
+    </record>
+</odoo>

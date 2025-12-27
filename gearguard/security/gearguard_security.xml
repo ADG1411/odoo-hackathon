@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Security Groups -->
+    <record id="module_category_gearguard" model="ir.module.category">
+        <field name="name">GearGuard</field>
+        <field name="description">Maintenance Management</field>
+        <field name="sequence">50</field>
+    </record>
+
+    <!-- User Group -->
+    <record id="group_gearguard_user" model="res.groups">
+        <field name="name">User</field>
+        <field name="category_id" ref="module_category_gearguard"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        <field name="comment">User can view equipment and create maintenance requests.</field>
+    </record>
+
+    <!-- Technician Group -->
+    <record id="group_gearguard_technician" model="res.groups">
+        <field name="name">Technician</field>
+        <field name="category_id" ref="module_category_gearguard"/>
+        <field name="implied_ids" eval="[(4, ref('group_gearguard_user'))]"/>
+        <field name="comment">Technician can manage maintenance requests assigned to them.</field>
+    </record>
+
+    <!-- Manager Group -->
+    <record id="group_gearguard_manager" model="res.groups">
+        <field name="name">Manager</field>
+        <field name="category_id" ref="module_category_gearguard"/>
+        <field name="implied_ids" eval="[(4, ref('group_gearguard_technician'))]"/>
+        <field name="comment">Manager has full access to all GearGuard features.</field>
+    </record>
+
+    <!-- Record Rules -->
+    
+    <!-- Equipment Rules -->
+    <record id="rule_equipment_user" model="ir.rule">
+        <field name="name">Equipment: User can read all</field>
+        <field name="model_id" ref="model_gearguard_equipment"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_gearguard_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="rule_equipment_manager" model="ir.rule">
+        <field name="name">Equipment: Manager full access</field>
+        <field name="model_id" ref="model_gearguard_equipment"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_gearguard_manager'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <!-- Maintenance Request Rules -->
+    <record id="rule_request_user_own" model="ir.rule">
+        <field name="name">Maintenance Request: User can see own requests</field>
+        <field name="model_id" ref="model_gearguard_maintenance_request"/>
+        <field name="domain_force">['|', ('request_user_id', '=', user.id), ('technician_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('group_gearguard_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="rule_request_technician" model="ir.rule">
+        <field name="name">Maintenance Request: Technician can see team requests</field>
+        <field name="model_id" ref="model_gearguard_maintenance_request"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_gearguard_technician'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="rule_request_manager" model="ir.rule">
+        <field name="name">Maintenance Request: Manager full access</field>
+        <field name="model_id" ref="model_gearguard_maintenance_request"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_gearguard_manager'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+</odoo>
