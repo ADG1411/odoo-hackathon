@@ -280,8 +280,8 @@ http://localhost:5000
 
 | Method | Endpoint | Description | Auth Required |
 |:------:|----------|-------------|:-------------:|
-| `POST` | `/auth/register` | Register new user | ❌ |
-| `POST` | `/auth/login` | User login | ❌ |
+| `POST` | `/auth/register` | Register new user | ✅ |
+| `POST` | `/auth/login` | User login | ✅ |
 | `POST` | `/auth/logout` | User logout | ✅ |
 | `GET` | `/auth/me` | Get current user | ✅ |
 | `PUT` | `/auth/profile` | Update profile | ✅ |
