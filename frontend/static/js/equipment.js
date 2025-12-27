@@ -306,7 +306,7 @@ function openCreateModal() {
     }, 0);
     document.getElementById('equipment-code').value = `EQ-${String(maxCode + 1).padStart(4, '0')}`;
     
-    document.getElementById('equipment-modal').style.display = 'flex';
+    document.getElementById('equipment-modal').classList.add('active');
     if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
@@ -340,7 +340,7 @@ async function editEquipment(id) {
     document.getElementById('equipment-owner').value = equipment.owner_name || '';
     document.getElementById('equipment-notes').value = equipment.notes || '';
     
-    document.getElementById('equipment-modal').style.display = 'flex';
+    document.getElementById('equipment-modal').classList.add('active');
     if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
@@ -348,7 +348,7 @@ async function editEquipment(id) {
  * Close modal
  */
 function closeModal() {
-    document.getElementById('equipment-modal').style.display = 'none';
+    document.getElementById('equipment-modal').classList.remove('active');
     editingEquipmentId = null;
 }
 
@@ -459,17 +459,18 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-// Close modal when clicking outside
+// Close modal when clicking on overlay background
 document.addEventListener('click', function(event) {
     const modal = document.getElementById('equipment-modal');
-    if (event.target === modal) {
+    if (modal && modal.classList.contains('active') && event.target === modal) {
         closeModal();
     }
 });
 
 // Close modal on escape key
 document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape') {
+    const modal = document.getElementById('equipment-modal');
+    if (event.key === 'Escape' && modal && modal.classList.contains('active')) {
         closeModal();
     }
 });

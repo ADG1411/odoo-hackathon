@@ -107,11 +107,11 @@
 </div>
 
 <!-- Create/Edit Equipment Modal -->
-<div class="modal-overlay" id="equipment-modal" style="display: none;">
-  <div class="modal">
+<div class="modal-overlay" id="equipment-modal">
+  <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-header">
       <h2 class="modal-title" id="modal-title">Add Equipment</h2>
-      <button class="modal-close" onclick="closeModal()">
+      <button type="button" class="modal-close" onclick="event.stopPropagation(); closeModal();">
         <i data-lucide="x" style="width: 20px; height: 20px;"></i>
       </button>
     </div>
@@ -204,7 +204,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        <button type="button" class="btn btn-secondary" onclick="event.stopPropagation(); closeModal();">Cancel</button>
         <button type="submit" class="btn btn-primary">
           <i data-lucide="save" style="width: 16px; height: 16px;"></i>
           <span id="submit-btn-text">Create Equipment</span>
