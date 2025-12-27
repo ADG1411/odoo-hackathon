@@ -20,6 +20,14 @@
           <h1 class="page-title" id="equipment-title">Equipment Details</h1>
         </div>
         
+        <!-- Smart Buttons Section (Odoo-like) -->
+        <div class="smart-buttons">
+          <button class="smart-button" onclick="openMaintenanceRequests()" id="maintenance-smart-btn">
+            <span class="smart-button-count" id="open-requests-count">0</span>
+            <span class="smart-button-label">Maintenance</span>
+          </button>
+        </div>
+        
         <div class="page-actions">
           <button class="btn btn-secondary" onclick="window.history.back()">
             <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
@@ -39,6 +47,15 @@
     
     <div class="page-body">
       <div class="page-body-inner">
+        <!-- Scrapped Equipment Warning Banner -->
+        <div class="scrapped-banner" id="scrapped-banner" style="display: none;">
+          <i data-lucide="alert-octagon" style="width: 32px; height: 32px;"></i>
+          <div class="scrapped-banner-text">
+            <h4>⚠️ Equipment Scrapped</h4>
+            <p id="scrap-reason-text">This equipment has been marked as scrapped and is no longer usable.</p>
+          </div>
+        </div>
+        
         <div class="detail-layout">
           <!-- Main Info Card -->
           <div class="card">
@@ -191,6 +208,83 @@
 .equipment-status.operational { background: var(--success-bg); color: var(--success); }
 .equipment-status.maintenance { background: var(--warning-bg); color: var(--warning-dark); }
 .equipment-status.broken { background: var(--danger-bg); color: var(--danger); }
+.equipment-status.scrapped { background: var(--muted-bg); color: var(--text-muted); }
+
+/* Smart Buttons (Odoo-like) */
+.smart-buttons {
+  display: flex;
+  gap: var(--space-sm);
+  margin-right: auto;
+}
+
+.smart-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 90px;
+}
+
+.smart-button:hover {
+  background: var(--bg-hover);
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.smart-button-count {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--primary);
+  line-height: 1;
+}
+
+.smart-button-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+}
+
+.smart-button.has-items .smart-button-count {
+  color: var(--warning);
+}
+
+.smart-button.urgent .smart-button-count {
+  color: var(--danger);
+}
+
+/* Scrapped Equipment Banner */
+.scrapped-banner {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  border: 1px solid #f87171;
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  margin-bottom: var(--space-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.scrapped-banner i {
+  color: #dc2626;
+}
+
+.scrapped-banner-text h4 {
+  color: #b91c1c;
+  margin-bottom: 4px;
+}
+
+.scrapped-banner-text p {
+  color: #dc2626;
+  font-size: 13px;
+}
 
 .table-container { overflow-x: auto; }
 .table { width: 100%; border-collapse: collapse; }
@@ -214,6 +308,16 @@ async function loadEquipmentDetails() {
     statusEl.textContent = equipment.status || 'Unknown';
     statusEl.className = 'equipment-status ' + (equipment.status || '');
     
+    // Show scrapped banner if equipment is scrapped
+    if (equipment.is_scrapped || equipment.status === 'scrapped') {
+      const banner = document.getElementById('scrapped-banner');
+      banner.style.display = 'flex';
+      const reasonText = equipment.scrap_reason 
+        ? `Scrapped on ${formatDate(equipment.scrap_date)}: ${equipment.scrap_reason}`
+        : 'This equipment has been marked as scrapped and is no longer usable.';
+      document.getElementById('scrap-reason-text').textContent = reasonText;
+    }
+    
     document.getElementById('eq-code').textContent = equipment.code || '-';
     document.getElementById('eq-name').textContent = equipment.name || '-';
     document.getElementById('eq-category').textContent = equipment.category_name || '-';
@@ -230,14 +334,44 @@ async function loadEquipmentDetails() {
     document.getElementById('eq-last-maintenance').textContent = formatDate(equipment.last_maintenance);
     document.getElementById('eq-notes').textContent = equipment.notes || 'No notes available.';
     
-    // Load maintenance history
+    // Load maintenance history and update smart button
     loadMaintenanceHistory();
+    loadOpenRequestsCount();
     
     lucide.createIcons();
   } catch (error) {
     console.error('Failed to load equipment:', error);
     alert('Failed to load equipment details');
   }
+}
+
+// Smart Button: Load open requests count
+async function loadOpenRequestsCount() {
+  try {
+    const response = await fetch(`/api/equipment/${equipmentId}/open-requests-count`);
+    if (response.ok) {
+      const data = await response.json();
+      const countEl = document.getElementById('open-requests-count');
+      const btnEl = document.getElementById('maintenance-smart-btn');
+      
+      countEl.textContent = data.count;
+      
+      // Add visual emphasis based on count
+      if (data.count > 0) {
+        btnEl.classList.add('has-items');
+      }
+      if (data.has_urgent) {
+        btnEl.classList.add('urgent');
+      }
+    }
+  } catch (error) {
+    console.error('Failed to load open requests count:', error);
+  }
+}
+
+// Smart Button: Open maintenance requests list for this equipment
+function openMaintenanceRequests() {
+  window.location.href = `/requests?equipment_id=${equipmentId}`;
 }
 
 async function loadMaintenanceHistory() {

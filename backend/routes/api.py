@@ -344,6 +344,49 @@ def equipment_autofill(id):
     })
 
 
+@api.route('/equipment/<int:id>/open-requests-count')
+def equipment_open_requests_count(id):
+    """Get count of open maintenance requests for equipment (Smart Button)
+    
+    This endpoint powers the Odoo-like Smart Button on the Equipment Form.
+    Returns the count of open requests and whether any are urgent.
+    """
+    equipment = Equipment.query.get_or_404(id)
+    
+    # Count open requests (not done, not scrapped)
+    open_count = db.session.query(MaintenanceRequest).join(MaintenanceStage).filter(
+        MaintenanceRequest.equipment_id == id,
+        MaintenanceStage.is_done == False,
+        MaintenanceStage.is_scrap == False
+    ).count()
+    
+    # Check for urgent requests
+    urgent_count = db.session.query(MaintenanceRequest).join(MaintenanceStage).filter(
+        MaintenanceRequest.equipment_id == id,
+        MaintenanceStage.is_done == False,
+        MaintenanceStage.is_scrap == False,
+        MaintenanceRequest.priority == 'urgent'
+    ).count()
+    
+    # Also get high priority count
+    high_count = db.session.query(MaintenanceRequest).join(MaintenanceStage).filter(
+        MaintenanceRequest.equipment_id == id,
+        MaintenanceStage.is_done == False,
+        MaintenanceStage.is_scrap == False,
+        MaintenanceRequest.priority == 'high'
+    ).count()
+    
+    return jsonify({
+        'equipment_id': id,
+        'equipment_code': equipment.code,
+        'count': open_count,
+        'urgent_count': urgent_count,
+        'high_count': high_count,
+        'has_urgent': urgent_count > 0,
+        'has_high': high_count > 0
+    })
+
+
 @api.route('/equipment/<int:id>/scrap', methods=['POST'])
 @login_required
 @permission_required('can_manage_equipment')
@@ -750,9 +793,18 @@ def move_request_stage(id):
         if stage.is_done and not req.completed_date:
             req.completed_date = datetime.utcnow()
         
-        # Update equipment status if scrapped
+        # SCRAP LOGIC: When request moves to Scrap stage
+        # Mark equipment as no longer usable with full audit trail
         if stage.is_scrap and req.equipment:
-            req.equipment.status = 'scrapped'
+            equipment = req.equipment
+            equipment.status = 'scrapped'
+            equipment.is_scrapped = True
+            equipment.scrap_date = datetime.utcnow().date()
+            equipment.scrap_reason = f"Equipment scrapped via maintenance request {req.reference}. Original request: {req.name}"
+            
+            # Log scrap activity
+            log_activity('scrap', 'equipment', equipment.id, 
+                        f'Equipment {equipment.code} scrapped due to request {req.reference}')
         
         db.session.commit()
         
