@@ -2,6 +2,21 @@
 
 ![Odoo Version](https://img.shields.io/badge/Odoo-17.0-blue)
 ![License](https://img.shields.io/badge/License-LGPL--3-green)
+![Hackathon](https://img.shields.io/badge/Odoo-Hackathon-orange)
+
+---
+
+## 👨‍💻 Team QuantCoder
+
+| Role | Name | College |
+|------|------|---------|
+| 👑 **Team Leader** | Gabani Abhi Dineshbhai | GCET |
+| 👨‍💻 **Team Member** | Preet Kakdiya | GCET |
+| 👨‍💻 **Team Member** | Tirth Goyani | GCET |
+
+> 🎓 **College**: G H Patel College of Engineering & Technology (GCET), Vallabh Vidyanagar
+
+---
 
 ## 🎯 Overview
 
@@ -149,4 +164,12 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
 
+<div align="center">
+
 **GearGuard** - Keep your assets running smoothly! 🛠️
+
+Made with ❤️ by **Team QuantCoder** | GCET
+
+*Odoo Hackathon 2025*
+
+</div>
