@@ -1,0 +1,175 @@
+<!-- Sidebar Navigation -->
+<aside class="sidebar" id="sidebar">
+  <!-- Logo -->
+  <div class="sidebar-header">
+    <a href="/" class="sidebar-logo">
+      <div class="sidebar-logo-icon">
+        <i data-lucide="shield-check" style="width: 24px; height: 24px;"></i>
+      </div>
+      <span class="sidebar-logo-text">GearGuard</span>
+    </a>
+  </div>
+  
+  <!-- Navigation -->
+  <nav class="sidebar-nav">
+    <!-- Main Section -->
+    <div class="nav-section">
+      <div class="nav-section-title">Main</div>
+      <a href="/" class="nav-item {{ 'active' if request.path == '/' else '' }}">
+        <i data-lucide="layout-dashboard" class="nav-item-icon"></i>
+        <span>Dashboard</span>
+      </a>
+      <a href="/requests" class="nav-item {{ 'active' if '/requests' in request.path else '' }}">
+        <i data-lucide="clipboard-list" class="nav-item-icon"></i>
+        <span>Maintenance</span>
+        <span class="nav-item-badge">24</span>
+      </a>
+      <a href="/calendar" class="nav-item {{ 'active' if request.path == '/calendar' else '' }}">
+        <i data-lucide="calendar" class="nav-item-icon"></i>
+        <span>Calendar</span>
+      </a>
+    </div>
+    
+    <!-- Assets Section -->
+    <div class="nav-section">
+      <div class="nav-section-title">Assets</div>
+      <a href="/equipment" class="nav-item {{ 'active' if '/equipment' in request.path else '' }}">
+        <i data-lucide="cog" class="nav-item-icon"></i>
+        <span>Equipment</span>
+      </a>
+      <a href="/categories" class="nav-item {{ 'active' if request.path == '/categories' else '' }}">
+        <i data-lucide="folder-tree" class="nav-item-icon"></i>
+        <span>Categories</span>
+      </a>
+    </div>
+    
+    <!-- Team Section -->
+    <div class="nav-section">
+      <div class="nav-section-title">Team</div>
+      <a href="/teams" class="nav-item {{ 'active' if '/teams' in request.path else '' }}">
+        <i data-lucide="users" class="nav-item-icon"></i>
+        <span>Teams</span>
+      </a>
+      <a href="/technicians" class="nav-item">
+        <i data-lucide="hard-hat" class="nav-item-icon"></i>
+        <span>Technicians</span>
+      </a>
+    </div>
+    
+    <!-- Reports Section -->
+    <div class="nav-section">
+      <div class="nav-section-title">Reports</div>
+      <a href="/reports" class="nav-item {{ 'active' if request.path == '/reports' else '' }}">
+        <i data-lucide="bar-chart-3" class="nav-item-icon"></i>
+        <span>Analytics</span>
+      </a>
+      <a href="/reports/history" class="nav-item">
+        <i data-lucide="history" class="nav-item-icon"></i>
+        <span>History</span>
+      </a>
+    </div>
+  </nav>
+  
+  <!-- Footer / User Menu -->
+  <div class="sidebar-footer">
+    <div class="user-menu" id="user-menu" onclick="toggleUserDropdown()">
+      <div class="avatar">
+        <span id="user-initials">SJ</span>
+      </div>
+      <div class="user-info">
+        <div class="user-name" id="user-display-name">Sarah Johnson</div>
+        <div class="user-role" id="user-display-role">Manager</div>
+      </div>
+      <i data-lucide="chevron-up" style="width: 16px; height: 16px; color: var(--text-muted);"></i>
+    </div>
+    
+    <!-- User Dropdown -->
+    <div class="user-dropdown hidden" id="user-dropdown" style="
+      position: absolute;
+      bottom: 100%;
+      left: var(--space-md);
+      right: var(--space-md);
+      background: var(--bg-card);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border-light);
+      padding: var(--space-sm);
+      margin-bottom: var(--space-sm);
+    ">
+      <a href="/settings" class="nav-item" style="margin-bottom: 0;">
+        <i data-lucide="settings" class="nav-item-icon"></i>
+        <span>Settings</span>
+      </a>
+      <a href="/profile" class="nav-item" style="margin-bottom: 0;">
+        <i data-lucide="user" class="nav-item-icon"></i>
+        <span>Profile</span>
+      </a>
+      <hr style="border: none; border-top: 1px solid var(--border-light); margin: var(--space-sm) 0;">
+      <a href="/auth/logout" class="nav-item" style="color: var(--danger); margin-bottom: 0;">
+        <i data-lucide="log-out" class="nav-item-icon"></i>
+        <span>Sign out</span>
+      </a>
+    </div>
+  </div>
+</aside>
+
+<!-- Mobile Menu Button -->
+<button class="btn btn-icon btn-secondary mobile-menu-btn" id="mobile-menu-btn" onclick="toggleSidebar()" style="
+  display: none;
+  position: fixed;
+  top: var(--space-md);
+  left: var(--space-md);
+  z-index: 101;
+">
+  <i data-lucide="menu" style="width: 20px; height: 20px;"></i>
+</button>
+
+<!-- Sidebar Overlay (Mobile) -->
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<style>
+  @media (max-width: 1024px) {
+    .mobile-menu-btn {
+      display: flex !important;
+    }
+    
+    .sidebar-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.3);
+      z-index: 99;
+      opacity: 0;
+      visibility: hidden;
+      transition: all var(--transition-normal);
+    }
+    
+    .sidebar-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+</style>
+
+<script>
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  sidebar.classList.toggle('open');
+  overlay.classList.toggle('active');
+}
+
+function toggleUserDropdown() {
+  const dropdown = document.getElementById('user-dropdown');
+  dropdown.classList.toggle('hidden');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e) {
+  const userMenu = document.getElementById('user-menu');
+  const dropdown = document.getElementById('user-dropdown');
+  
+  if (!userMenu.contains(e.target) && !dropdown.contains(e.target)) {
+    dropdown.classList.add('hidden');
+  }
+});
+</script>

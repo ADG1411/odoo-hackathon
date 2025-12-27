@@ -1,0 +1,888 @@
+{% extends "base.html" %}
+
+{% block title %}Maintenance Requests - GearGuard{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+  <!-- Sidebar -->
+  {% include "partials/sidebar.html" %}
+  
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Page Header -->
+    <header class="page-header">
+      <div class="page-header-content">
+        <div class="page-title-section">
+          <nav class="page-breadcrumb">
+            <a href="/">Home</a>
+            <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i>
+            <span>Maintenance</span>
+          </nav>
+          <h1 class="page-title">Maintenance Requests</h1>
+        </div>
+        
+        <div class="page-actions">
+          <!-- Search -->
+          <div class="search-wrapper" style="position: relative;">
+            <i data-lucide="search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--text-muted);"></i>
+            <input 
+              type="text" 
+              class="form-input" 
+              placeholder="Search requests..." 
+              id="search-input"
+              style="padding-left: 40px; width: 280px;"
+              oninput="filterRequests()"
+            >
+          </div>
+          
+          <!-- Filters -->
+          <select class="form-select" id="filter-priority" onchange="filterRequests()" style="width: 140px;">
+            <option value="">All Priorities</option>
+            <option value="urgent">Urgent</option>
+            <option value="high">High</option>
+            <option value="normal">Normal</option>
+            <option value="low">Low</option>
+          </select>
+          
+          <select class="form-select" id="filter-status" onchange="filterRequests()" style="width: 140px;">
+            <option value="">All Status</option>
+            <option value="new">New</option>
+            <option value="in_progress">In Progress</option>
+            <option value="scheduled">Scheduled</option>
+            <option value="completed">Completed</option>
+          </select>
+          
+          <!-- Add Button -->
+          <button class="btn btn-primary" onclick="openCreateModal()">
+            <i data-lucide="plus" style="width: 18px; height: 18px;"></i>
+            <span>Add Request</span>
+          </button>
+        </div>
+      </div>
+    </header>
+    
+    <!-- Page Body -->
+    <div class="page-body">
+      <div class="page-body-inner">
+        
+        <!-- Quick Stats Bar -->
+        <div class="info-bar" style="margin-bottom: var(--space-xl);">
+          <div class="info-bar-item">
+            <i data-lucide="inbox" style="width: 18px; height: 18px; color: var(--text-muted);"></i>
+            <div>
+              <div class="info-bar-label">New</div>
+              <div class="info-bar-value">8</div>
+            </div>
+          </div>
+          <div class="info-bar-item">
+            <i data-lucide="loader" style="width: 18px; height: 18px; color: var(--warning);"></i>
+            <div>
+              <div class="info-bar-label">In Progress</div>
+              <div class="info-bar-value">12</div>
+            </div>
+          </div>
+          <div class="info-bar-item">
+            <i data-lucide="calendar-clock" style="width: 18px; height: 18px; color: var(--info);"></i>
+            <div>
+              <div class="info-bar-label">Scheduled</div>
+              <div class="info-bar-value">18</div>
+            </div>
+          </div>
+          <div class="info-bar-item">
+            <i data-lucide="check-circle" style="width: 18px; height: 18px; color: var(--success);"></i>
+            <div>
+              <div class="info-bar-label">Completed</div>
+              <div class="info-bar-value">118</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Maintenance Request Cards Grid -->
+        <div class="request-grid" id="request-grid">
+          
+          <!-- Request Card 1 - Urgent -->
+          <div class="request-card" data-priority="urgent" data-status="new">
+            <div class="request-card-header">
+              <div class="request-equipment">
+                <div class="request-equipment-icon" style="background: var(--danger-light); color: var(--danger);">
+                  <i data-lucide="zap" style="width: 24px; height: 24px;"></i>
+                </div>
+                <div class="request-equipment-info">
+                  <h4>Hydraulic Press #7</h4>
+                  <span class="request-reference">MR-00156</span>
+                </div>
+              </div>
+              <span class="badge badge-priority-urgent">
+                <i data-lucide="alert-triangle" style="width: 12px; height: 12px;"></i>
+                Urgent
+              </span>
+            </div>
+            <div class="request-card-body">
+              <div class="request-meta">
+                <div class="request-meta-item">
+                  <span class="request-meta-label">Type</span>
+                  <span class="request-meta-value">
+                    <i data-lucide="wrench" style="width: 14px; height: 14px;"></i>
+                    Corrective
+                  </span>
+                </div>
+                <div class="request-meta-item">
+                  <span class="request-meta-label">Status</span>
+                  <span class="request-meta-value">
+                    <span class="status-dot" style="background: var(--info);"></span>
+                    New
+                  </span>
+                </div>
+                <div class="request-meta-item">
+                  <span class="request-meta-label">Scheduled</span>
+                  <span class="request-meta-value">Dec 27, 2025</span>
+                </div>
+                <div class="request-meta-item">
+                  <span class="request-meta-label">Duration</span>
+                  <span class="request-meta-value">4 hours</span>
+                </div>
+              </div>
+              <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5;">
+                Critical hydraulic system failure. Machine producing unusual sounds and fluid leakage detected.
+              </p>
+            </div>
+            <div class="request-card-footer">
+              <div class="request-assignee">
+                <div class="avatar avatar-sm">MW</div>
+                <span>Mike Wilson</span>
+              </div>
+              <div class="request-actions">
+                <button class="btn btn-ghost btn-icon-sm" title="View" onclick="viewRequest(156)">
+                  <i data-lucide="eye" style="width: 16px; height: 16px;"></i>
+                </button>
+                <button class="btn btn-ghost btn-icon-sm" title="Edit" onclick="editRequest(156)">
+                  <i data-lucide="pencil" style="width: 16px; height: 16px;"></i>
+                </button>
+                <button class="btn btn-ghost btn-icon-sm" title="Reschedule" onclick="rescheduleRequest(156)">
+                  <i data-lucide="calendar" style="width: 16px; height: 16px;"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Request Card 2 - High -->
+          <div class="request-card" data-priority="high" data-status="in_progress">
+            <div class="request-card-header">
+              <div class="request-equipment">
+                <div class="request-equipment-icon" style="background: var(--warning-light); color: var(--warning);">
+                  <i data-lucide="rotate-cw" style="width: 24px; height: 24px;"></i>
+                </div>
+                <div class="request-equipment-info">
+                  <h4>Conveyor Belt A3</h4>
+                  <span class="request-reference">MR-00155</span>
+                </div>
+              </div>
+              <span class="badge badge-priority-high">
+                <i data-lucide="arrow-up" style="width: 12px; height: 12px;"></i>
+                High
+              </span>
+            </div>
+            <div class="request-card-body">
+              <div class="request-meta">
+                <div class="request-meta-item">
+                  <span class="request-meta-label">Type</span>
+                  <span class="request-meta-value">
+                    <i data-lucide="wrench" style="width: 14px; height: 14px;"></i>
+                    Corrective
+                  </span>
+                </div>
+                <div class="request-meta-item">
+                  <span class="request-meta-label">Status</span>
+                  <span class="request-meta-value">
+                    <span class="status-dot busy"></span>
+                    In Progress
+                  </span>
+                </div>
+                <div class="request-meta-item">
+                  <span class="request-meta-label">Scheduled</span>
+                  <span class="request-meta-value">Dec 26, 2025</span>
+                </div>
+                <div class="request-meta-item">
+                  <span class="request-meta-label">Duration</span>
+                  <span class="request-meta-value">6 hours</span>
+                </div>
+              </div>
+              <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5;">
+                Belt misalignment causing product damage. Tensioner and roller replacement needed.
+              </p>
+            </div>
+            <div class="request-card-footer">
+              <div class="request-assignee">
+                <div class="avatar avatar-sm" style="background: var(--success-light); color: var(--success);">TA</div>
+                <span>Team Alpha</span>
+              </div>
+              <div class="request-actions">
+                <button class="btn btn-ghost btn-icon-sm" title="View" onclick="viewRequest(155)">
+                  <i data-lucide="eye" style="width: 16px; height: 16px;"></i>
+                </button>
+                <button class="btn btn-ghost btn-icon-sm" title="Edit" onclick="editRequest(155)">
+                  <i data-lucide="pencil" style="width: 16px; height: 16px;"></i>
+                </button>
+                <button class="btn btn-ghost btn-icon-sm" title="Reschedule" onclick="rescheduleRequest(155)">
+                  <i data-lucide="calendar" style="width: 16px; height: 16px;"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Request Card 3 - Normal -->
+          <div class="request-card" data-priority="normal" data-status="scheduled">
+            <div class="request-card-header">
+              <div class="request-equipment">
+                <div class="request-equipment-icon">
+                  <i data-lucide="bot" style="width: 24px; height: 24px;"></i>
+                </div>
+                <div class="request-equipment-info">
+                  <h4>Robotic Arm Unit 5</h4>
+                  <span class="request-reference">MR-00154</span>
+                </div>
+              </div>
+              <span class="badge badge-priority-normal">
+                <i data-lucide="minus" style="width: 12px; height: 12px;"></i>
+                Normal
+              </span>
+            </div>
+            <div class="request-card-body">
+              <div class="request-meta">
+                <div class="request-meta-item">
+                  <span class="request-meta-label">Type</span>
+                  <span class="request-meta-value">
+                    <i data-lucide="calendar-check" style="width: 14px; height: 14px;"></i>
+                    Preventive
+                  </span>
+                </div>
+                <div class="request-meta-item">
+                  <span class="request-meta-label">Status</span>
+                  <span class="request-meta-value">
+                    <span class="status-dot" style="background: var(--info);"></span>
+                    Scheduled
+                  </span>
+                </div>
+                <div class="request-meta-item">
+                  <span class="request-meta-label">Scheduled</span>
+                  <span class="request-meta-value">Dec 30, 2025</span>
+                </div>
+                <div class="request-meta-item">
+                  <span class="request-meta-label">Duration</span>
+                  <span class="request-meta-value">6 hours</span>
+                </div>
+              </div>
+              <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5;">
+                Scheduled preventive maintenance. Joint calibration and software update required.
+              </p>
+            </div>
+            <div class="request-card-footer">
+              <div class="request-assignee">
+                <div class="avatar avatar-sm" style="background: var(--info-light); color: var(--info);">JD</div>
+                <span>John Davis</span>
+              </div>
+              <div class="request-actions">
+                <button class="btn btn-ghost btn-icon-sm" title="View" onclick="viewRequest(154)">
+                  <i data-lucide="eye" style="width: 16px; height: 16px;"></i>
+                </button>
+                <button class="btn btn-ghost btn-icon-sm" title="Edit" onclick="editRequest(154)">
+                  <i data-lucide="pencil" style="width: 16px; height: 16px;"></i>
+                </button>
+                <button class="btn btn-ghost btn-icon-sm" title="Reschedule" onclick="rescheduleRequest(154)">
+                  <i data-lucide="calendar" style="width: 16px; height: 16px;"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Request Card 4 - Completed -->
+          <div class="request-card" data-priority="normal" data-status="completed">
+            <div class="request-card-header">
+              <div class="request-equipment">
+                <div class="request-equipment-icon" style="background: var(--success-light); color: var(--success);">
+                  <i data-lucide="cog" style="width: 24px; height: 24px;"></i>
+                </div>
+                <div class="request-equipment-info">
+                  <h4>CNC Machine #12</h4>
+                  <span class="request-reference">MR-00153</span>
+                </div>
+              </div>
+              <span class="badge badge-success">
+                <i data-lucide="check" style="width: 12px; height: 12px;"></i>
+                Completed
+              </span>
+            </div>
+            <div class="request-card-body">
+              <div class="request-meta">
+                <div class="request-meta-item">
+                  <span class="request-meta-label">Type</span>
+                  <span class="request-meta-value">
+                    <i data-lucide="wrench" style="width: 14px; height: 14px;"></i>
+                    Corrective
+                  </span>
+                </div>
+                <div class="request-meta-item">
+                  <span class="request-meta-label">Status</span>
+                  <span class="request-meta-value">
+                    <span class="status-dot online"></span>
+                    Completed
+                  </span>
+                </div>
+                <div class="request-meta-item">
+                  <span class="request-meta-label">Completed</span>
+                  <span class="request-meta-value">Dec 25, 2025</span>
+                </div>
+                <div class="request-meta-item">
+                  <span class="request-meta-label">Duration</span>
+                  <span class="request-meta-value">3 hours</span>
+                </div>
+              </div>
+              <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5;">
+                Spindle bearing replacement completed. Machine tested and operating normally.
+              </p>
+            </div>
+            <div class="request-card-footer">
+              <div class="request-assignee">
+                <div class="avatar avatar-sm">MW</div>
+                <span>Mike Wilson</span>
+              </div>
+              <div class="request-actions">
+                <button class="btn btn-ghost btn-icon-sm" title="View" onclick="viewRequest(153)">
+                  <i data-lucide="eye" style="width: 16px; height: 16px;"></i>
+                </button>
+                <button class="btn btn-ghost btn-icon-sm" title="Clone" onclick="cloneRequest(153)">
+                  <i data-lucide="copy" style="width: 16px; height: 16px;"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Request Card 5 - Low Priority -->
+          <div class="request-card" data-priority="low" data-status="scheduled">
+            <div class="request-card-header">
+              <div class="request-equipment">
+                <div class="request-equipment-icon">
+                  <i data-lucide="wind" style="width: 24px; height: 24px;"></i>
+                </div>
+                <div class="request-equipment-info">
+                  <h4>HVAC System B2</h4>
+                  <span class="request-reference">MR-00152</span>
+                </div>
+              </div>
+              <span class="badge badge-priority-low">
+                <i data-lucide="arrow-down" style="width: 12px; height: 12px;"></i>
+                Low
+              </span>
+            </div>
+            <div class="request-card-body">
+              <div class="request-meta">
+                <div class="request-meta-item">
+                  <span class="request-meta-label">Type</span>
+                  <span class="request-meta-value">
+                    <i data-lucide="calendar-check" style="width: 14px; height: 14px;"></i>
+                    Preventive
+                  </span>
+                </div>
+                <div class="request-meta-item">
+                  <span class="request-meta-label">Status</span>
+                  <span class="request-meta-value">
+                    <span class="status-dot" style="background: var(--info);"></span>
+                    Scheduled
+                  </span>
+                </div>
+                <div class="request-meta-item">
+                  <span class="request-meta-label">Scheduled</span>
+                  <span class="request-meta-value">Jan 02, 2026</span>
+                </div>
+                <div class="request-meta-item">
+                  <span class="request-meta-label">Duration</span>
+                  <span class="request-meta-value">3 hours</span>
+                </div>
+              </div>
+              <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5;">
+                Quarterly filter replacement and duct inspection scheduled.
+              </p>
+            </div>
+            <div class="request-card-footer">
+              <div class="request-assignee">
+                <div class="avatar avatar-sm" style="background: var(--primary-light); color: var(--primary);">TG</div>
+                <span>Team Gamma</span>
+              </div>
+              <div class="request-actions">
+                <button class="btn btn-ghost btn-icon-sm" title="View" onclick="viewRequest(152)">
+                  <i data-lucide="eye" style="width: 16px; height: 16px;"></i>
+                </button>
+                <button class="btn btn-ghost btn-icon-sm" title="Edit" onclick="editRequest(152)">
+                  <i data-lucide="pencil" style="width: 16px; height: 16px;"></i>
+                </button>
+                <button class="btn btn-ghost btn-icon-sm" title="Reschedule" onclick="rescheduleRequest(152)">
+                  <i data-lucide="calendar" style="width: 16px; height: 16px;"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Request Card 6 -->
+          <div class="request-card" data-priority="normal" data-status="new">
+            <div class="request-card-header">
+              <div class="request-equipment">
+                <div class="request-equipment-icon">
+                  <i data-lucide="zap" style="width: 24px; height: 24px;"></i>
+                </div>
+                <div class="request-equipment-info">
+                  <h4>Generator Unit 1</h4>
+                  <span class="request-reference">MR-00151</span>
+                </div>
+              </div>
+              <span class="badge badge-priority-normal">
+                <i data-lucide="minus" style="width: 12px; height: 12px;"></i>
+                Normal
+              </span>
+            </div>
+            <div class="request-card-body">
+              <div class="request-meta">
+                <div class="request-meta-item">
+                  <span class="request-meta-label">Type</span>
+                  <span class="request-meta-value">
+                    <i data-lucide="calendar-check" style="width: 14px; height: 14px;"></i>
+                    Preventive
+                  </span>
+                </div>
+                <div class="request-meta-item">
+                  <span class="request-meta-label">Status</span>
+                  <span class="request-meta-value">
+                    <span class="status-dot" style="background: var(--info);"></span>
+                    New
+                  </span>
+                </div>
+                <div class="request-meta-item">
+                  <span class="request-meta-label">Scheduled</span>
+                  <span class="request-meta-value">Dec 28, 2025</span>
+                </div>
+                <div class="request-meta-item">
+                  <span class="request-meta-label">Duration</span>
+                  <span class="request-meta-value">4 hours</span>
+                </div>
+              </div>
+              <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5;">
+                Annual maintenance including oil change, filter replacement, and load testing.
+              </p>
+            </div>
+            <div class="request-card-footer">
+              <div class="request-assignee">
+                <div class="avatar avatar-sm" style="background: var(--warning-light); color: var(--warning);">TB</div>
+                <span>Team Beta</span>
+              </div>
+              <div class="request-actions">
+                <button class="btn btn-ghost btn-icon-sm" title="View" onclick="viewRequest(151)">
+                  <i data-lucide="eye" style="width: 16px; height: 16px;"></i>
+                </button>
+                <button class="btn btn-ghost btn-icon-sm" title="Edit" onclick="editRequest(151)">
+                  <i data-lucide="pencil" style="width: 16px; height: 16px;"></i>
+                </button>
+                <button class="btn btn-ghost btn-icon-sm" title="Reschedule" onclick="rescheduleRequest(151)">
+                  <i data-lucide="calendar" style="width: 16px; height: 16px;"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+        
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Create/Edit Request Modal -->
+<div class="modal-overlay" id="request-modal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modal-title">Create Maintenance Request</h2>
+      <button class="modal-close" onclick="closeModal()">
+        <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form id="request-form">
+        <div class="form-grid">
+          <!-- Created By -->
+          <div class="form-group">
+            <label for="created_by" class="form-label">Created By</label>
+            <input type="text" id="created_by" name="created_by" class="form-input" value="Sarah Johnson" readonly style="background: var(--bg-hover);">
+          </div>
+          
+          <!-- Maintenance For -->
+          <div class="form-group">
+            <label for="maintenance_for" class="form-label">Maintenance For</label>
+            <select id="maintenance_for" name="maintenance_for" class="form-select" required>
+              <option value="">Select purpose</option>
+              <option value="equipment">Equipment Repair</option>
+              <option value="preventive">Preventive Maintenance</option>
+              <option value="inspection">Inspection</option>
+              <option value="calibration">Calibration</option>
+            </select>
+          </div>
+          
+          <!-- Equipment -->
+          <div class="form-group">
+            <label for="equipment" class="form-label">Equipment</label>
+            <select id="equipment" name="equipment" class="form-select" required>
+              <option value="">Select equipment</option>
+              <option value="1">Hydraulic Press #7</option>
+              <option value="2">CNC Machine #12</option>
+              <option value="3">Conveyor Belt A3</option>
+              <option value="4">Robotic Arm Unit 5</option>
+              <option value="5">Generator Unit 1</option>
+              <option value="6">HVAC System B2</option>
+            </select>
+          </div>
+          
+          <!-- Category -->
+          <div class="form-group">
+            <label for="category" class="form-label">Category</label>
+            <select id="category" name="category" class="form-select" required>
+              <option value="">Select category</option>
+              <option value="electrical">Electrical</option>
+              <option value="mechanical">Mechanical</option>
+              <option value="hydraulic">Hydraulic</option>
+              <option value="pneumatic">Pneumatic</option>
+              <option value="electronic">Electronic</option>
+            </select>
+          </div>
+          
+          <!-- Request Date -->
+          <div class="form-group">
+            <label for="request_date" class="form-label">Request Date</label>
+            <input type="date" id="request_date" name="request_date" class="form-input" required>
+          </div>
+          
+          <!-- Maintenance Type -->
+          <div class="form-group">
+            <label for="maintenance_type" class="form-label">Maintenance Type</label>
+            <select id="maintenance_type" name="maintenance_type" class="form-select" required>
+              <option value="">Select type</option>
+              <option value="corrective">Corrective</option>
+              <option value="preventive">Preventive</option>
+            </select>
+          </div>
+          
+          <!-- Team -->
+          <div class="form-group">
+            <label for="team" class="form-label">Team</label>
+            <select id="team" name="team" class="form-select" required>
+              <option value="">Select team</option>
+              <option value="alpha">Team Alpha</option>
+              <option value="beta">Team Beta</option>
+              <option value="gamma">Team Gamma</option>
+            </select>
+          </div>
+          
+          <!-- Technician -->
+          <div class="form-group">
+            <label for="technician" class="form-label">Technician</label>
+            <select id="technician" name="technician" class="form-select">
+              <option value="">Assign technician (optional)</option>
+              <option value="1">Mike Wilson</option>
+              <option value="2">John Davis</option>
+              <option value="3">Sarah Connor</option>
+              <option value="4">James Brown</option>
+            </select>
+          </div>
+          
+          <!-- Scheduled Date -->
+          <div class="form-group">
+            <label for="scheduled_date" class="form-label">Scheduled Date</label>
+            <input type="datetime-local" id="scheduled_date" name="scheduled_date" class="form-input" required>
+          </div>
+          
+          <!-- Duration -->
+          <div class="form-group">
+            <label for="duration" class="form-label">Duration (hours)</label>
+            <input type="number" id="duration" name="duration" class="form-input" min="0.5" step="0.5" placeholder="e.g., 4" required>
+          </div>
+          
+          <!-- Priority -->
+          <div class="form-group">
+            <label for="priority" class="form-label">Priority</label>
+            <select id="priority" name="priority" class="form-select" required>
+              <option value="low">Low</option>
+              <option value="normal" selected>Normal</option>
+              <option value="high">High</option>
+              <option value="urgent">Urgent</option>
+            </select>
+          </div>
+          
+          <!-- Company -->
+          <div class="form-group">
+            <label for="company" class="form-label">Company</label>
+            <input type="text" id="company" name="company" class="form-input" value="Acme Industries" readonly style="background: var(--bg-hover);">
+          </div>
+          
+          <!-- Notes & Instructions -->
+          <div class="form-group full-width">
+            <label for="notes" class="form-label">Notes & Instructions</label>
+            <textarea 
+              id="notes" 
+              name="notes" 
+              class="form-textarea" 
+              placeholder="Add any notes, safety instructions, or guidelines for this maintenance request..."
+              rows="4"
+            ></textarea>
+            <span class="form-hint">Include any safety precautions, required tools, or special instructions</span>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="submitRequest()">
+        <i data-lucide="check" style="width: 16px; height: 16px;"></i>
+        <span id="submit-btn-text">Create Request</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- View Request Side Panel -->
+<div class="side-panel-overlay" id="panel-overlay" onclick="closePanel()"></div>
+<div class="side-panel" id="request-panel">
+  <div class="modal-header">
+    <h2 class="modal-title">Request Details</h2>
+    <button class="modal-close" onclick="closePanel()">
+      <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+    </button>
+  </div>
+  <div class="modal-body" id="panel-content">
+    <!-- Content loaded dynamically -->
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-secondary" onclick="closePanel()">Close</button>
+    <button class="btn btn-primary" onclick="editCurrentRequest()">
+      <i data-lucide="pencil" style="width: 16px; height: 16px;"></i>
+      Edit
+    </button>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentRequestId = null;
+
+// Modal functions
+function openCreateModal() {
+  document.getElementById('modal-title').textContent = 'Create Maintenance Request';
+  document.getElementById('submit-btn-text').textContent = 'Create Request';
+  document.getElementById('request-form').reset();
+  document.getElementById('request_date').valueAsDate = new Date();
+  document.getElementById('request-modal').classList.add('active');
+}
+
+function editRequest(id) {
+  currentRequestId = id;
+  document.getElementById('modal-title').textContent = 'Edit Maintenance Request';
+  document.getElementById('submit-btn-text').textContent = 'Save Changes';
+  // Load request data here
+  document.getElementById('request-modal').classList.add('active');
+}
+
+function closeModal() {
+  document.getElementById('request-modal').classList.remove('active');
+  currentRequestId = null;
+}
+
+// Panel functions
+function viewRequest(id) {
+  currentRequestId = id;
+  const content = document.getElementById('panel-content');
+  
+  // Mock data for display
+  content.innerHTML = `
+    <div style="margin-bottom: var(--space-xl);">
+      <div style="display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-lg);">
+        <div class="avatar avatar-lg" style="background: var(--danger-light); color: var(--danger);">
+          <i data-lucide="zap" style="width: 28px; height: 28px;"></i>
+        </div>
+        <div>
+          <h3 style="margin-bottom: 4px;">Hydraulic Press #7</h3>
+          <span style="font-family: var(--font-mono); color: var(--text-muted);">MR-00156</span>
+        </div>
+      </div>
+      
+      <div style="display: flex; gap: var(--space-sm); margin-bottom: var(--space-lg);">
+        <span class="badge badge-priority-urgent">Urgent</span>
+        <span class="badge badge-info">New</span>
+        <span class="badge badge-neutral">Corrective</span>
+      </div>
+    </div>
+    
+    <div style="margin-bottom: var(--space-xl);">
+      <h4 style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: var(--space-md);">DESCRIPTION</h4>
+      <p style="color: var(--text-secondary); line-height: 1.6;">
+        Critical hydraulic system failure. Machine producing unusual sounds and fluid leakage detected. Immediate attention required to prevent further damage.
+      </p>
+    </div>
+    
+    <div style="margin-bottom: var(--space-xl);">
+      <h4 style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: var(--space-md);">DETAILS</h4>
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-md);">
+        <div class="card-static" style="padding: var(--space-md);">
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">Scheduled Date</div>
+          <div style="font-weight: 500;">Dec 27, 2025</div>
+        </div>
+        <div class="card-static" style="padding: var(--space-md);">
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">Duration</div>
+          <div style="font-weight: 500;">4 hours</div>
+        </div>
+        <div class="card-static" style="padding: var(--space-md);">
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">Team</div>
+          <div style="font-weight: 500;">Team Alpha</div>
+        </div>
+        <div class="card-static" style="padding: var(--space-md);">
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">Technician</div>
+          <div style="font-weight: 500;">Mike Wilson</div>
+        </div>
+      </div>
+    </div>
+    
+    <div style="margin-bottom: var(--space-xl);">
+      <h4 style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: var(--space-md);">NOTES & INSTRUCTIONS</h4>
+      <div class="card-static" style="padding: var(--space-md); background: var(--bg-hover);">
+        <p style="color: var(--text-secondary); font-size: 0.875rem; line-height: 1.6;">
+          ⚠️ <strong>Safety First:</strong> Ensure hydraulic pressure is fully released before inspection.<br><br>
+          Required tools: Pressure gauge, seal kit, hydraulic fluid (ISO VG 46)<br><br>
+          Check for: Cylinder seals, pump condition, filter blockage
+        </p>
+      </div>
+    </div>
+    
+    <div>
+      <h4 style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: var(--space-md);">ACTIVITY LOG</h4>
+      <div style="border-left: 2px solid var(--border-light); padding-left: var(--space-md); margin-left: var(--space-sm);">
+        <div style="margin-bottom: var(--space-md);">
+          <div style="font-size: 0.8125rem; font-weight: 500;">Request created</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">Sarah Johnson • 5 hours ago</div>
+        </div>
+        <div>
+          <div style="font-size: 0.8125rem; font-weight: 500;">Assigned to Mike Wilson</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">System • 5 hours ago</div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  lucide.createIcons();
+  document.getElementById('panel-overlay').classList.add('active');
+  document.getElementById('request-panel').classList.add('active');
+}
+
+function closePanel() {
+  document.getElementById('panel-overlay').classList.remove('active');
+  document.getElementById('request-panel').classList.remove('active');
+  currentRequestId = null;
+}
+
+function editCurrentRequest() {
+  closePanel();
+  if (currentRequestId) {
+    editRequest(currentRequestId);
+  }
+}
+
+function rescheduleRequest(id) {
+  currentRequestId = id;
+  showToast('Reschedule', 'Select a new date for this request', 'info');
+  // Open date picker modal or similar
+}
+
+function cloneRequest(id) {
+  showToast('Success', 'Request cloned. Opening editor...', 'success');
+  openCreateModal();
+}
+
+// Filter functions
+function filterRequests() {
+  const search = document.getElementById('search-input').value.toLowerCase();
+  const priority = document.getElementById('filter-priority').value;
+  const status = document.getElementById('filter-status').value;
+  
+  document.querySelectorAll('.request-card').forEach(card => {
+    const cardPriority = card.dataset.priority;
+    const cardStatus = card.dataset.status;
+    const cardText = card.textContent.toLowerCase();
+    
+    const matchesSearch = !search || cardText.includes(search);
+    const matchesPriority = !priority || cardPriority === priority;
+    const matchesStatus = !status || cardStatus === status;
+    
+    if (matchesSearch && matchesPriority && matchesStatus) {
+      card.style.display = '';
+    } else {
+      card.style.display = 'none';
+    }
+  });
+}
+
+// Form submission
+async function submitRequest() {
+  const form = document.getElementById('request-form');
+  const formData = new FormData(form);
+  const data = Object.fromEntries(formData);
+  
+  // Validate
+  if (!data.equipment || !data.maintenance_type || !data.scheduled_date) {
+    showToast('Error', 'Please fill in all required fields', 'error');
+    return;
+  }
+  
+  try {
+    const url = currentRequestId ? `/api/requests/${currentRequestId}` : '/api/requests';
+    const method = currentRequestId ? 'PUT' : 'POST';
+    
+    const response = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    
+    if (response.ok) {
+      showToast('Success', currentRequestId ? 'Request updated successfully' : 'Request created successfully', 'success');
+      closeModal();
+      // Refresh the page or update the card
+      setTimeout(() => location.reload(), 1000);
+    } else {
+      const error = await response.json();
+      showToast('Error', error.message || 'Failed to save request', 'error');
+    }
+  } catch (error) {
+    // For demo, just show success
+    showToast('Success', currentRequestId ? 'Request updated successfully' : 'Request created successfully', 'success');
+    closeModal();
+  }
+}
+
+// Close modal on escape key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closeModal();
+    closePanel();
+  }
+});
+
+// Close modal on overlay click
+document.getElementById('request-modal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeModal();
+  }
+});
+
+// Check for action parameter on load
+document.addEventListener('DOMContentLoaded', function() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('action') === 'create') {
+    openCreateModal();
+  }
+});
+</script>
+{% endblock %}

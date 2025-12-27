@@ -13,6 +13,18 @@ def dashboard():
     return render_template('dashboard.html')
 
 
+@views.route('/login')
+def login():
+    """Login page"""
+    return render_template('auth/login.html')
+
+
+@views.route('/signup')
+def signup():
+    """Signup page"""
+    return render_template('auth/signup.html')
+
+
 @views.route('/equipment')
 def equipment_list():
     """Equipment list page"""

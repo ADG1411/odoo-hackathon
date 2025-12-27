@@ -9,9 +9,9 @@ class Config:
     """Base configuration"""
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'gearguard-secret-key-2024'
     
-    # PostgreSQL Database
+    # Database - Use SQLite for development, PostgreSQL for production
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'postgresql://gearguard:gearguard@localhost:5432/gearguard'
+        'sqlite:///gearguard.db'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # App Settings

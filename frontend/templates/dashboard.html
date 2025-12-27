@@ -1,0 +1,350 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - GearGuard{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+  <!-- Sidebar -->
+  {% include "partials/sidebar.html" %}
+  
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Page Header -->
+    <header class="page-header">
+      <div class="page-header-content">
+        <div class="page-title-section">
+          <nav class="page-breadcrumb">
+            <a href="/">Home</a>
+            <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i>
+            <span>Dashboard</span>
+          </nav>
+          <h1 class="page-title">Dashboard</h1>
+        </div>
+        
+        <div class="page-actions">
+          <button class="btn btn-secondary btn-sm" onclick="refreshDashboard()">
+            <i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i>
+            <span>Refresh</span>
+          </button>
+          <button class="btn btn-primary btn-sm" onclick="openCreateRequestModal()">
+            <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+            <span>New Request</span>
+          </button>
+        </div>
+      </div>
+    </header>
+    
+    <!-- Page Body -->
+    <div class="page-body">
+      <div class="page-body-inner">
+        
+        <!-- Info Bar -->
+        <div class="info-bar">
+          <div class="info-bar-item">
+            <div>
+              <div class="info-bar-label">Company</div>
+              <div class="info-bar-value" id="company-name">Acme Industries</div>
+            </div>
+          </div>
+          <div class="info-bar-item">
+            <div>
+              <div class="info-bar-label">Admin</div>
+              <div class="info-bar-value" id="admin-name">John Smith</div>
+            </div>
+          </div>
+          <div class="info-bar-item">
+            <div>
+              <div class="info-bar-label">Stage</div>
+              <div class="info-bar-value">
+                <span class="status-dot online"></span>
+                Production
+              </div>
+            </div>
+          </div>
+          <div class="info-bar-item">
+            <div>
+              <div class="info-bar-label">Category</div>
+              <div class="info-bar-value">Manufacturing</div>
+            </div>
+          </div>
+          <div class="info-bar-item">
+            <div>
+              <div class="info-bar-label">Logged in as</div>
+              <div class="info-bar-value" id="employee-name">Sarah Johnson</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- KPI Cards -->
+        <div class="kpi-grid">
+          <!-- Total Requests -->
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <div class="kpi-icon">
+                <i data-lucide="clipboard-list" style="width: 24px; height: 24px;"></i>
+              </div>
+              <div class="kpi-trend up">
+                <i data-lucide="trending-up" style="width: 14px; height: 14px;"></i>
+                <span>12%</span>
+              </div>
+            </div>
+            <div class="kpi-value" id="total-requests">156</div>
+            <div class="kpi-label">Total Requests</div>
+          </div>
+          
+          <!-- Open Maintenance -->
+          <div class="kpi-card warning">
+            <div class="kpi-header">
+              <div class="kpi-icon">
+                <i data-lucide="wrench" style="width: 24px; height: 24px;"></i>
+              </div>
+              <div class="kpi-trend down">
+                <i data-lucide="trending-down" style="width: 14px; height: 14px;"></i>
+                <span>5%</span>
+              </div>
+            </div>
+            <div class="kpi-value" id="open-requests">24</div>
+            <div class="kpi-label">Open Maintenance</div>
+          </div>
+          
+          <!-- Scheduled -->
+          <div class="kpi-card info">
+            <div class="kpi-header">
+              <div class="kpi-icon">
+                <i data-lucide="calendar-clock" style="width: 24px; height: 24px;"></i>
+              </div>
+              <div class="kpi-trend up">
+                <i data-lucide="trending-up" style="width: 14px; height: 14px;"></i>
+                <span>8%</span>
+              </div>
+            </div>
+            <div class="kpi-value" id="scheduled-requests">18</div>
+            <div class="kpi-label">Scheduled</div>
+          </div>
+          
+          <!-- High Priority -->
+          <div class="kpi-card danger">
+            <div class="kpi-header">
+              <div class="kpi-icon">
+                <i data-lucide="alert-triangle" style="width: 24px; height: 24px;"></i>
+              </div>
+              <div class="kpi-trend up">
+                <i data-lucide="trending-up" style="width: 14px; height: 14px;"></i>
+                <span>3%</span>
+              </div>
+            </div>
+            <div class="kpi-value" id="high-priority">7</div>
+            <div class="kpi-label">High Priority</div>
+          </div>
+        </div>
+        
+        <!-- Widgets Grid -->
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-lg);">
+          
+          <!-- Recent Activity Widget -->
+          <div class="widget" style="grid-column: span 2;">
+            <div class="widget-header">
+              <h3 class="widget-title">Recent Activity</h3>
+              <a href="/requests" class="btn btn-ghost btn-sm">View All</a>
+            </div>
+            <div class="widget-body">
+              <ul class="widget-list" id="recent-activity">
+                <li class="widget-list-item">
+                  <div class="avatar avatar-sm" style="background: var(--success-light); color: var(--success);">
+                    <i data-lucide="check-circle" style="width: 16px; height: 16px;"></i>
+                  </div>
+                  <div style="flex: 1;">
+                    <div style="font-weight: 500; font-size: 0.875rem;">CNC Machine #12 - Maintenance completed</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Completed by Mike Wilson • 2 hours ago</div>
+                  </div>
+                  <span class="badge badge-success">Completed</span>
+                </li>
+                <li class="widget-list-item">
+                  <div class="avatar avatar-sm" style="background: var(--warning-light); color: var(--warning);">
+                    <i data-lucide="clock" style="width: 16px; height: 16px;"></i>
+                  </div>
+                  <div style="flex: 1;">
+                    <div style="font-weight: 500; font-size: 0.875rem;">Conveyor Belt A3 - In progress</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Assigned to Team Alpha • 4 hours ago</div>
+                  </div>
+                  <span class="badge badge-warning">In Progress</span>
+                </li>
+                <li class="widget-list-item">
+                  <div class="avatar avatar-sm" style="background: var(--danger-light); color: var(--danger);">
+                    <i data-lucide="alert-circle" style="width: 16px; height: 16px;"></i>
+                  </div>
+                  <div style="flex: 1;">
+                    <div style="font-weight: 500; font-size: 0.875rem;">Hydraulic Press #7 - Urgent request created</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Created by Sarah Johnson • 5 hours ago</div>
+                  </div>
+                  <span class="badge badge-danger">Urgent</span>
+                </li>
+                <li class="widget-list-item">
+                  <div class="avatar avatar-sm" style="background: var(--info-light); color: var(--info);">
+                    <i data-lucide="calendar" style="width: 16px; height: 16px;"></i>
+                  </div>
+                  <div style="flex: 1;">
+                    <div style="font-weight: 500; font-size: 0.875rem;">Robotic Arm Unit 5 - Scheduled for preventive maintenance</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Scheduled for Dec 30, 2025 • Yesterday</div>
+                  </div>
+                  <span class="badge badge-info">Scheduled</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+          
+          <!-- Priority Alerts Widget -->
+          <div class="widget">
+            <div class="widget-header">
+              <h3 class="widget-title">Priority Alerts</h3>
+              <button class="btn btn-ghost btn-icon-sm">
+                <i data-lucide="bell" style="width: 16px; height: 16px;"></i>
+              </button>
+            </div>
+            <div class="widget-body">
+              <ul class="widget-list" id="priority-alerts">
+                <li class="widget-list-item" style="background: var(--danger-light); border-radius: var(--radius-md); padding: var(--space-md); margin-bottom: var(--space-sm);">
+                  <div style="flex: 1;">
+                    <div style="font-weight: 600; font-size: 0.875rem; color: var(--danger);">
+                      <i data-lucide="alert-triangle" style="width: 14px; height: 14px; display: inline;"></i>
+                      Hydraulic Press #7
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);">Critical failure - Immediate attention</div>
+                  </div>
+                </li>
+                <li class="widget-list-item" style="background: var(--warning-light); border-radius: var(--radius-md); padding: var(--space-md); margin-bottom: var(--space-sm);">
+                  <div style="flex: 1;">
+                    <div style="font-weight: 600; font-size: 0.875rem; color: #b45309;">
+                      <i data-lucide="alert-circle" style="width: 14px; height: 14px; display: inline;"></i>
+                      Assembly Line Motor
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);">High vibration detected</div>
+                  </div>
+                </li>
+                <li class="widget-list-item" style="background: var(--warning-light); border-radius: var(--radius-md); padding: var(--space-md);">
+                  <div style="flex: 1;">
+                    <div style="font-weight: 600; font-size: 0.875rem; color: #b45309;">
+                      <i data-lucide="thermometer" style="width: 14px; height: 14px; display: inline;"></i>
+                      Cooling System B2
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);">Temperature above threshold</div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+          
+          <!-- Upcoming Maintenance Widget -->
+          <div class="widget" style="grid-column: span 2;">
+            <div class="widget-header">
+              <h3 class="widget-title">Upcoming Scheduled Maintenance</h3>
+              <a href="/calendar" class="btn btn-ghost btn-sm">View Calendar</a>
+            </div>
+            <div class="widget-body">
+              <ul class="widget-list" id="upcoming-maintenance">
+                <li class="widget-list-item">
+                  <div style="text-align: center; padding: 0 var(--space-md); min-width: 60px;">
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">28</div>
+                    <div style="font-size: 0.6875rem; text-transform: uppercase; color: var(--text-muted);">Dec</div>
+                  </div>
+                  <div style="flex: 1; border-left: 1px solid var(--border-light); padding-left: var(--space-md);">
+                    <div style="font-weight: 500; font-size: 0.9375rem;">Generator Maintenance</div>
+                    <div style="font-size: 0.8125rem; color: var(--text-muted);">Preventive • 4 hours • Team Beta</div>
+                  </div>
+                  <span class="badge badge-primary">Preventive</span>
+                </li>
+                <li class="widget-list-item">
+                  <div style="text-align: center; padding: 0 var(--space-md); min-width: 60px;">
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">30</div>
+                    <div style="font-size: 0.6875rem; text-transform: uppercase; color: var(--text-muted);">Dec</div>
+                  </div>
+                  <div style="flex: 1; border-left: 1px solid var(--border-light); padding-left: var(--space-md);">
+                    <div style="font-weight: 500; font-size: 0.9375rem;">Robotic Arm Unit 5</div>
+                    <div style="font-size: 0.8125rem; color: var(--text-muted);">Preventive • 6 hours • Team Alpha</div>
+                  </div>
+                  <span class="badge badge-primary">Preventive</span>
+                </li>
+                <li class="widget-list-item">
+                  <div style="text-align: center; padding: 0 var(--space-md); min-width: 60px;">
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">02</div>
+                    <div style="font-size: 0.6875rem; text-transform: uppercase; color: var(--text-muted);">Jan</div>
+                  </div>
+                  <div style="flex: 1; border-left: 1px solid var(--border-light); padding-left: var(--space-md);">
+                    <div style="font-weight: 500; font-size: 0.9375rem;">HVAC System Inspection</div>
+                    <div style="font-size: 0.8125rem; color: var(--text-muted);">Preventive • 3 hours • Team Gamma</div>
+                  </div>
+                  <span class="badge badge-primary">Preventive</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+          
+          <!-- Quick Stats Widget -->
+          <div class="widget">
+            <div class="widget-header">
+              <h3 class="widget-title">Quick Stats</h3>
+            </div>
+            <div class="widget-body">
+              <div style="display: flex; flex-direction: column; gap: var(--space-md);">
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-light);">
+                  <span style="color: var(--text-secondary); font-size: 0.875rem;">Completion Rate</span>
+                  <span style="font-weight: 600; color: var(--success);">94%</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-light);">
+                  <span style="color: var(--text-secondary); font-size: 0.875rem;">Avg. Response Time</span>
+                  <span style="font-weight: 600;">2.4 hrs</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-light);">
+                  <span style="color: var(--text-secondary); font-size: 0.875rem;">Equipment Uptime</span>
+                  <span style="font-weight: 600; color: var(--success);">98.7%</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-sm) 0;">
+                  <span style="color: var(--text-secondary); font-size: 0.875rem;">Active Technicians</span>
+                  <span style="font-weight: 600;">12</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+        
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function loadDashboardData() {
+  try {
+    // Load KPI data
+    const response = await fetch('/api/dashboard/stats');
+    if (response.ok) {
+      const data = await response.json();
+      document.getElementById('total-requests').textContent = data.total_requests || '0';
+      document.getElementById('open-requests').textContent = data.open_requests || '0';
+      document.getElementById('scheduled-requests').textContent = data.scheduled_requests || '0';
+      document.getElementById('high-priority').textContent = data.high_priority || '0';
+    }
+  } catch (error) {
+    console.log('Using mock data for dashboard');
+  }
+}
+
+function refreshDashboard() {
+  showToast('Refreshing', 'Dashboard data is being updated...', 'info');
+  loadDashboardData();
+  setTimeout(() => {
+    showToast('Success', 'Dashboard refreshed successfully', 'success');
+  }, 1000);
+}
+
+function openCreateRequestModal() {
+  window.location.href = '/requests?action=create';
+}
+
+// Load dashboard data on page load
+document.addEventListener('DOMContentLoaded', loadDashboardData);
+</script>
+{% endblock %}
