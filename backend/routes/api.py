@@ -1082,9 +1082,168 @@ def maintenance_trends_report():
     return jsonify(result)
 
 
+# ==================== TECHNICIANS ====================
+@api.route('/technicians')
+def get_all_technicians():
+    """Get all technicians with optional filters"""
+    from backend.models.technician import Technician
+    
+    query = Technician.query.filter_by(is_active=True)
+    
+    # Filter by skill
+    skill = request.args.get('skill')
+    if skill:
+        query = query.filter(Technician.skill == skill)
+    
+    # Filter by team
+    team_id = request.args.get('team_id')
+    if team_id:
+        query = query.filter(Technician.team_id == int(team_id))
+    
+    # Filter by availability
+    availability = request.args.get('availability')
+    if availability:
+        query = query.filter(Technician.availability_status == availability)
+    
+    # Search
+    search = request.args.get('search')
+    if search:
+        query = query.filter(
+            db.or_(
+                Technician.name.ilike(f'%{search}%'),
+                Technician.company_name.ilike(f'%{search}%'),
+                Technician.skill.ilike(f'%{search}%')
+            )
+        )
+    
+    technicians = query.order_by(Technician.name).all()
+    return jsonify([t.to_dict() for t in technicians])
+
+
+@api.route('/technicians/<int:id>')
+def get_technician(id):
+    """Get single technician"""
+    from backend.models.technician import Technician
+    technician = Technician.query.get_or_404(id)
+    return jsonify(technician.to_dict())
+
+
+@api.route('/technicians', methods=['POST'])
+@login_required
+@permission_required('can_manage_teams')
+def create_technician():
+    """Create new technician"""
+    from backend.models.technician import Technician
+    
+    data = request.json
+    
+    # Generate random avatar color
+    import random
+    colors = ['#6366f1', '#8b5cf6', '#ec4899', '#ef4444', '#f59e0b', '#10b981', '#06b6d4', '#3b82f6']
+    
+    technician = Technician(
+        name=data['name'],
+        skill=data.get('skill', 'General'),
+        team_id=data.get('team_id'),
+        company_name=data.get('company_name'),
+        availability_status=data.get('availability_status', 'available'),
+        email=data.get('email'),
+        phone=data.get('phone'),
+        avatar_color=random.choice(colors)
+    )
+    
+    db.session.add(technician)
+    db.session.commit()
+    
+    log_activity('create', 'technician', technician.id, f'Created technician: {technician.name}')
+    return jsonify(technician.to_dict()), 201
+
+
+@api.route('/technicians/<int:id>', methods=['PUT'])
+@login_required
+@permission_required('can_manage_teams')
+def update_technician(id):
+    """Update technician"""
+    from backend.models.technician import Technician
+    
+    technician = Technician.query.get_or_404(id)
+    data = request.json
+    
+    for field in ['name', 'skill', 'team_id', 'company_name', 'availability_status', 'email', 'phone']:
+        if field in data:
+            setattr(technician, field, data[field])
+    
+    db.session.commit()
+    
+    log_activity('update', 'technician', technician.id, f'Updated technician: {technician.name}')
+    return jsonify(technician.to_dict())
+
+
+@api.route('/technicians/<int:id>', methods=['DELETE'])
+@login_required
+@permission_required('can_manage_teams')
+def delete_technician(id):
+    """Delete (deactivate) technician"""
+    from backend.models.technician import Technician
+    
+    technician = Technician.query.get_or_404(id)
+    name = technician.name
+    
+    # Soft delete - just deactivate
+    technician.is_active = False
+    db.session.commit()
+    
+    log_activity('delete', 'technician', id, f'Deactivated technician: {name}')
+    return '', 204
+
+
+@api.route('/technicians/<int:id>/status', methods=['PUT'])
+@login_required
+def update_technician_status(id):
+    """Update technician availability status"""
+    from backend.models.technician import Technician
+    
+    technician = Technician.query.get_or_404(id)
+    data = request.json
+    
+    if 'availability_status' in data:
+        technician.availability_status = data['availability_status']
+        db.session.commit()
+        
+        log_activity('update', 'technician', technician.id, 
+                     f'Updated {technician.name} status to {technician.availability_status}')
+    
+    return jsonify(technician.to_dict())
+
+
+@api.route('/technicians/stats')
+def get_technician_stats():
+    """Get technician statistics"""
+    from backend.models.technician import Technician
+    
+    total = Technician.query.filter_by(is_active=True).count()
+    available = Technician.query.filter_by(is_active=True, availability_status='available').count()
+    busy = Technician.query.filter_by(is_active=True, availability_status='busy').count()
+    off_duty = Technician.query.filter_by(is_active=True, availability_status='off_duty').count()
+    
+    return jsonify({
+        'total': total,
+        'available': available,
+        'busy': busy,
+        'off_duty': off_duty
+    })
+
+
+@api.route('/technicians/skills')
+def get_skill_types():
+    """Get list of skill types"""
+    from backend.models.technician import SKILL_TYPES
+    return jsonify(SKILL_TYPES)
+
+
 # ==================== USERS (for technician selection) ====================
 @api.route('/users/technicians')
-def get_technicians():
+def get_technicians_users():
     """Get users who can be assigned as technicians"""
     from backend.models.user import User
     # Get users with technician or higher role

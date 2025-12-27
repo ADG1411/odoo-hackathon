@@ -41,6 +41,10 @@
         <i data-lucide="folder-tree" class="nav-item-icon"></i>
         <span>Categories</span>
       </a>
+      <a href="/workcenters" class="nav-item {{ 'active' if '/workcenters' in request.path else '' }}">
+        <i data-lucide="factory" class="nav-item-icon"></i>
+        <span>Work Centers</span>
+      </a>
     </div>
     
     <!-- Team Section -->
@@ -50,7 +54,7 @@
         <i data-lucide="users" class="nav-item-icon"></i>
         <span>Teams</span>
       </a>
-      <a href="/technicians" class="nav-item">
+      <a href="/technicians" class="nav-item {{ 'active' if '/technicians' in request.path else '' }}">
         <i data-lucide="hard-hat" class="nav-item-icon"></i>
         <span>Technicians</span>
       </a>

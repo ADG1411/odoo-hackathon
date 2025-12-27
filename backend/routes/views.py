@@ -91,6 +91,18 @@ def history():
     return render_template('history.html')
 
 
+@views.route('/technicians')
+def technicians():
+    """Technicians management page"""
+    return render_template('technicians.html')
+
+
+@views.route('/workcenters')
+def workcenters():
+    """Work Center Selection page"""
+    return render_template('workcenters.html')
+
+
 @views.route('/settings')
 def settings():
     """Settings page"""

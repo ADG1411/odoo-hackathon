@@ -12,6 +12,7 @@ from .maintenance_team import MaintenanceTeam, TeamMember
 from .maintenance_stage import MaintenanceStage
 from .maintenance_request import MaintenanceRequest
 from .user import User, Role, ActivityLog
+from .technician import Technician, SKILL_TYPES, AVAILABILITY_STATUSES
 
 __all__ = [
     'db',
@@ -23,5 +24,8 @@ __all__ = [
     'MaintenanceRequest',
     'User',
     'Role',
-    'ActivityLog'
+    'ActivityLog',
+    'Technician',
+    'SKILL_TYPES',
+    'AVAILABILITY_STATUSES'
 ]
