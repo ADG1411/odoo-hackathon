@@ -11,7 +11,6 @@
 | Role | Name | College |
 |------|------|---------|
 | 👑 **Team Leader** | Gabani Abhi Dineshbhai | GCET |
-| 👨‍💻 **Team Member** | Preet Kakdiya | GCET |
 | 👨‍💻 **Team Member** | Tirth Goyani | GCET |
 
 > 🎓 **College**: G H Patel College of Engineering & Technology (GCET), Vallabh Vidyanagar
