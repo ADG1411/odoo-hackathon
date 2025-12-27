@@ -1,0 +1,1443 @@
+{% extends "base.html" %}
+
+{% block title %}Management - GearGuard{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Page Tabs */
+  .page-tabs {
+    display: flex;
+    gap: var(--space-xs);
+    background: var(--bg-hover);
+    padding: 6px;
+    border-radius: var(--radius-lg);
+    width: fit-content;
+  }
+  
+  .page-tab {
+    padding: 10px 24px;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+  
+  .page-tab:hover {
+    color: var(--text-primary);
+    background: var(--bg-card);
+  }
+  
+  .page-tab.active {
+    background: var(--bg-card);
+    color: var(--text-primary);
+    box-shadow: var(--shadow-sm);
+  }
+  
+  .page-tab .tab-count {
+    background: var(--bg-hover);
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+  
+  .page-tab.active .tab-count {
+    background: var(--primary-light);
+    color: var(--primary);
+  }
+  
+  /* Section Container */
+  .section-container {
+    display: none;
+  }
+  
+  .section-container.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  /* Cards Grid */
+  .management-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: var(--space-lg);
+  }
+  
+  /* Management Card */
+  .management-card {
+    background: var(--bg-card);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-card);
+    padding: var(--space-xl);
+    transition: all var(--transition-normal);
+    border: 1px solid transparent;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .management-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-card-hover);
+    border-color: var(--border-light);
+  }
+  
+  .management-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary), var(--primary-hover));
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+  }
+  
+  .management-card:hover::before {
+    opacity: 1;
+  }
+  
+  /* Card Header */
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--space-lg);
+  }
+  
+  .card-icon-wrapper {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--primary-light);
+    color: var(--primary);
+  }
+  
+  .card-icon-wrapper.team {
+    background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+    color: #4f46e5;
+  }
+  
+  .card-icon-wrapper.category {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    color: #d97706;
+  }
+  
+  .card-actions {
+    display: flex;
+    gap: var(--space-xs);
+  }
+  
+  .card-action-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-md);
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+  }
+  
+  .card-action-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+  }
+  
+  .card-action-btn.danger:hover {
+    background: var(--danger-light);
+    color: var(--danger);
+  }
+  
+  /* Card Body */
+  .card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-sm);
+  }
+  
+  .card-company {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    margin-bottom: var(--space-lg);
+  }
+  
+  /* Team Members */
+  .team-members {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--border-light);
+  }
+  
+  .member-avatars {
+    display: flex;
+    margin-left: 8px;
+  }
+  
+  .member-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-full);
+    background: var(--primary-light);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: -8px;
+    border: 2px solid var(--bg-card);
+    position: relative;
+  }
+  
+  .member-avatar:nth-child(1) { background: #dbeafe; color: #2563eb; z-index: 4; }
+  .member-avatar:nth-child(2) { background: #fce7f3; color: #db2777; z-index: 3; }
+  .member-avatar:nth-child(3) { background: #d1fae5; color: #059669; z-index: 2; }
+  .member-avatar:nth-child(4) { background: #fef3c7; color: #d97706; z-index: 1; }
+  
+  .member-avatar.more {
+    background: var(--bg-hover);
+    color: var(--text-secondary);
+    font-size: 0.6875rem;
+  }
+  
+  .member-count {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+  }
+  
+  /* Category Responsible */
+  .responsible-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--border-light);
+  }
+  
+  .responsible-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-full);
+    background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+    color: #4f46e5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+  
+  .responsible-details {
+    flex: 1;
+  }
+  
+  .responsible-name {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+  
+  .responsible-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+  
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: var(--space-2xl) var(--space-xl);
+    background: var(--bg-card);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-card);
+  }
+  
+  .empty-state-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto var(--space-lg);
+    background: var(--bg-hover);
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+  }
+  
+  .empty-state-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-sm);
+  }
+  
+  .empty-state-desc {
+    font-size: 0.9375rem;
+    color: var(--text-muted);
+    margin-bottom: var(--space-xl);
+    max-width: 360px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  /* Modal Enhancements */
+  .modal-panel {
+    position: fixed;
+    top: 0;
+    right: -480px;
+    width: 480px;
+    height: 100vh;
+    background: var(--bg-card);
+    box-shadow: var(--shadow-xl);
+    z-index: 1001;
+    display: flex;
+    flex-direction: column;
+    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .modal-panel.active {
+    right: 0;
+  }
+  
+  .modal-panel-header {
+    padding: var(--space-xl);
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .modal-panel-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+  
+  .modal-panel-body {
+    flex: 1;
+    padding: var(--space-xl);
+    overflow-y: auto;
+  }
+  
+  .modal-panel-footer {
+    padding: var(--space-lg) var(--space-xl);
+    border-top: 1px solid var(--border-light);
+    display: flex;
+    gap: var(--space-md);
+    justify-content: flex-end;
+    background: var(--bg-hover);
+  }
+  
+  /* Form Styles */
+  .form-section {
+    margin-bottom: var(--space-xl);
+  }
+  
+  .form-section-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    margin-bottom: var(--space-md);
+  }
+  
+  .form-group {
+    margin-bottom: var(--space-lg);
+  }
+  
+  .form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: var(--space-sm);
+  }
+  
+  .form-label .required {
+    color: var(--danger);
+    margin-left: 2px;
+  }
+  
+  .form-input, .form-select {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 0.9375rem;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    transition: all var(--transition-fast);
+  }
+  
+  .form-input:focus, .form-select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-light);
+  }
+  
+  .form-input.error {
+    border-color: var(--danger);
+  }
+  
+  .form-error {
+    font-size: 0.8125rem;
+    color: var(--danger);
+    margin-top: var(--space-xs);
+    display: block;
+  }
+  
+  /* Multi-select Members */
+  .members-select-wrapper {
+    position: relative;
+  }
+  
+  .members-select-input {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    padding: 8px 12px;
+    min-height: 48px;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    background: var(--bg-card);
+    cursor: text;
+    transition: all var(--transition-fast);
+  }
+  
+  .members-select-input:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-light);
+  }
+  
+  .member-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: 4px 8px 4px 12px;
+    background: var(--primary-light);
+    color: var(--primary);
+    border-radius: var(--radius-full);
+    font-size: 0.8125rem;
+    font-weight: 500;
+  }
+  
+  .member-tag-remove {
+    width: 18px;
+    height: 18px;
+    border-radius: var(--radius-full);
+    border: none;
+    background: transparent;
+    color: var(--primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+  }
+  
+  .member-tag-remove:hover {
+    background: var(--primary);
+    color: white;
+  }
+  
+  .members-search-input {
+    flex: 1;
+    min-width: 120px;
+    border: none;
+    outline: none;
+    padding: 4px 0;
+    font-size: 0.9375rem;
+    background: transparent;
+  }
+  
+  .members-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    margin-top: var(--space-xs);
+    max-height: 240px;
+    overflow-y: auto;
+    z-index: 10;
+    display: none;
+  }
+  
+  .members-dropdown.active {
+    display: block;
+  }
+  
+  .member-option {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    cursor: pointer;
+    transition: background var(--transition-fast);
+  }
+  
+  .member-option:hover {
+    background: var(--bg-hover);
+  }
+  
+  .member-option.selected {
+    background: var(--primary-light);
+  }
+  
+  .member-option-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-full);
+    background: var(--bg-hover);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+  
+  .member-option-info {
+    flex: 1;
+  }
+  
+  .member-option-name {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+  
+  .member-option-role {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+  
+  /* Stats Header */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-xl);
+  }
+  
+  .section-stats {
+    display: flex;
+    gap: var(--space-lg);
+  }
+  
+  .stat-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+  }
+  
+  .stat-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .stat-icon.teams {
+    background: var(--primary-light);
+    color: var(--primary);
+  }
+  
+  .stat-icon.members {
+    background: var(--success-light);
+    color: var(--success);
+  }
+  
+  .stat-icon.categories {
+    background: var(--warning-light);
+    color: var(--warning);
+  }
+  
+  .stat-value {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+  
+  /* Success Toast Animation */
+  @keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  
+  .toast-success {
+    animation: slideIn 0.3s ease;
+  }
+  
+  /* Responsive */
+  @media (max-width: 1024px) {
+    .management-grid {
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .management-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .modal-panel {
+      width: 100%;
+      right: -100%;
+    }
+    
+    .page-tabs {
+      width: 100%;
+    }
+    
+    .page-tab {
+      flex: 1;
+      justify-content: center;
+    }
+    
+    .section-header {
+      flex-direction: column;
+      gap: var(--space-md);
+      align-items: flex-start;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+  <!-- Sidebar -->
+  {% include "partials/sidebar.html" %}
+  
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Page Header -->
+    <header class="page-header">
+      <div class="page-header-content">
+        <div class="page-title-section">
+          <nav class="page-breadcrumb">
+            <a href="/">Home</a>
+            <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i>
+            <span>Management</span>
+          </nav>
+          <h1 class="page-title">Teams & Categories</h1>
+        </div>
+        
+        <div class="page-actions">
+          <button class="btn btn-primary" id="add-btn" onclick="openAddModal()">
+            <i data-lucide="plus" style="width: 18px; height: 18px;"></i>
+            <span id="add-btn-text">Add Team</span>
+          </button>
+        </div>
+      </div>
+    </header>
+    
+    <!-- Page Body -->
+    <div class="page-body">
+      <div class="page-body-inner">
+        
+        <!-- Page Tabs -->
+        <div style="margin-bottom: var(--space-xl);">
+          <div class="page-tabs">
+            <button class="page-tab active" data-tab="teams" onclick="switchTab('teams')">
+              <i data-lucide="users" style="width: 18px; height: 18px;"></i>
+              <span>Teams</span>
+              <span class="tab-count" id="teams-count">4</span>
+            </button>
+            <button class="page-tab" data-tab="categories" onclick="switchTab('categories')">
+              <i data-lucide="folder-tree" style="width: 18px; height: 18px;"></i>
+              <span>Categories</span>
+              <span class="tab-count" id="categories-count">6</span>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Teams Section -->
+        <div class="section-container active" id="teams-section">
+          <!-- Section Header -->
+          <div class="section-header">
+            <div class="section-stats">
+              <div class="stat-item">
+                <div class="stat-icon teams">
+                  <i data-lucide="users" style="width: 16px; height: 16px;"></i>
+                </div>
+                <div>
+                  <div class="stat-value">4</div>
+                  <div class="stat-label">Total Teams</div>
+                </div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-icon members">
+                  <i data-lucide="user-check" style="width: 16px; height: 16px;"></i>
+                </div>
+                <div>
+                  <div class="stat-value">18</div>
+                  <div class="stat-label">Total Members</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="search-wrapper" style="position: relative;">
+              <i data-lucide="search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--text-muted);"></i>
+              <input type="text" class="form-input" placeholder="Search teams..." style="padding-left: 40px; width: 240px;" oninput="filterTeams(this.value)">
+            </div>
+          </div>
+          
+          <!-- Teams Grid -->
+          <div class="management-grid" id="teams-grid">
+            <!-- Team cards will be rendered here -->
+          </div>
+          
+          <!-- Empty State -->
+          <div class="empty-state" id="teams-empty" style="display: none;">
+            <div class="empty-state-icon">
+              <i data-lucide="users" style="width: 40px; height: 40px;"></i>
+            </div>
+            <h3 class="empty-state-title">No teams created yet</h3>
+            <p class="empty-state-desc">Create your first team to start organizing your maintenance workforce efficiently.</p>
+            <button class="btn btn-primary" onclick="openAddModal()">
+              <i data-lucide="plus" style="width: 18px; height: 18px;"></i>
+              Add your first team
+            </button>
+          </div>
+        </div>
+        
+        <!-- Categories Section -->
+        <div class="section-container" id="categories-section">
+          <!-- Section Header -->
+          <div class="section-header">
+            <div class="section-stats">
+              <div class="stat-item">
+                <div class="stat-icon categories">
+                  <i data-lucide="folder-tree" style="width: 16px; height: 16px;"></i>
+                </div>
+                <div>
+                  <div class="stat-value">6</div>
+                  <div class="stat-label">Categories</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="search-wrapper" style="position: relative;">
+              <i data-lucide="search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--text-muted);"></i>
+              <input type="text" class="form-input" placeholder="Search categories..." style="padding-left: 40px; width: 240px;" oninput="filterCategories(this.value)">
+            </div>
+          </div>
+          
+          <!-- Categories Grid -->
+          <div class="management-grid" id="categories-grid">
+            <!-- Category cards will be rendered here -->
+          </div>
+          
+          <!-- Empty State -->
+          <div class="empty-state" id="categories-empty" style="display: none;">
+            <div class="empty-state-icon">
+              <i data-lucide="folder-tree" style="width: 40px; height: 40px;"></i>
+            </div>
+            <h3 class="empty-state-title">No categories added yet</h3>
+            <p class="empty-state-desc">Create categories to organize and classify your equipment and maintenance tasks.</p>
+            <button class="btn btn-primary" onclick="openAddModal()">
+              <i data-lucide="plus" style="width: 18px; height: 18px;"></i>
+              Create your first category
+            </button>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Overlay -->
+<div class="side-panel-overlay" id="modal-overlay" onclick="closeModal()"></div>
+
+<!-- Team Modal Panel -->
+<div class="modal-panel" id="team-modal">
+  <div class="modal-panel-header">
+    <h2 class="modal-panel-title" id="team-modal-title">Add Team</h2>
+    <button class="btn btn-ghost btn-icon-sm" onclick="closeModal()">
+      <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+    </button>
+  </div>
+  
+  <div class="modal-panel-body">
+    <form id="team-form" onsubmit="saveTeam(event)">
+      <input type="hidden" id="team-id">
+      
+      <div class="form-section">
+        <div class="form-section-title">Team Information</div>
+        
+        <div class="form-group">
+          <label class="form-label">Team Name <span class="required">*</span></label>
+          <input type="text" class="form-input" id="team-name" placeholder="e.g., Alpha Team" required>
+          <span class="form-error" id="team-name-error"></span>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Company Name <span class="required">*</span></label>
+          <input type="text" class="form-input" id="team-company" placeholder="e.g., Acme Industries" required>
+          <span class="form-error" id="team-company-error"></span>
+        </div>
+      </div>
+      
+      <div class="form-section">
+        <div class="form-section-title">Team Members</div>
+        
+        <div class="form-group">
+          <label class="form-label">Select Members <span class="required">*</span></label>
+          <div class="members-select-wrapper">
+            <div class="members-select-input" onclick="document.getElementById('member-search').focus()">
+              <div id="selected-members"></div>
+              <input type="text" class="members-search-input" id="member-search" placeholder="Search members..." oninput="filterMemberOptions(this.value)" onfocus="showMemberDropdown()" autocomplete="off">
+            </div>
+            <div class="members-dropdown" id="members-dropdown">
+              <!-- Member options will be rendered here -->
+            </div>
+          </div>
+          <span class="form-error" id="team-members-error"></span>
+        </div>
+      </div>
+    </form>
+  </div>
+  
+  <div class="modal-panel-footer">
+    <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-primary" onclick="saveTeam(event)">
+      <i data-lucide="check" style="width: 16px; height: 16px;"></i>
+      <span id="team-save-btn-text">Save Team</span>
+    </button>
+  </div>
+</div>
+
+<!-- Category Modal Panel -->
+<div class="modal-panel" id="category-modal">
+  <div class="modal-panel-header">
+    <h2 class="modal-panel-title" id="category-modal-title">Add Category</h2>
+    <button class="btn btn-ghost btn-icon-sm" onclick="closeModal()">
+      <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+    </button>
+  </div>
+  
+  <div class="modal-panel-body">
+    <form id="category-form" onsubmit="saveCategory(event)">
+      <input type="hidden" id="category-id">
+      
+      <div class="form-section">
+        <div class="form-section-title">Category Information</div>
+        
+        <div class="form-group">
+          <label class="form-label">Category Name <span class="required">*</span></label>
+          <input type="text" class="form-input" id="category-name" placeholder="e.g., Industrial Machinery" required>
+          <span class="form-error" id="category-name-error"></span>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Company Name <span class="required">*</span></label>
+          <input type="text" class="form-input" id="category-company" placeholder="e.g., Acme Industries" required>
+          <span class="form-error" id="category-company-error"></span>
+        </div>
+      </div>
+      
+      <div class="form-section">
+        <div class="form-section-title">Responsibility</div>
+        
+        <div class="form-group">
+          <label class="form-label">Responsible Person <span class="required">*</span></label>
+          <select class="form-select" id="category-responsible" required>
+            <option value="">Select responsible person</option>
+          </select>
+          <span class="form-error" id="category-responsible-error"></span>
+        </div>
+      </div>
+    </form>
+  </div>
+  
+  <div class="modal-panel-footer">
+    <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-primary" onclick="saveCategory(event)">
+      <i data-lucide="check" style="width: 16px; height: 16px;"></i>
+      <span id="category-save-btn-text">Save Category</span>
+    </button>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal" id="delete-modal" style="display: none;">
+  <div class="modal-backdrop" onclick="closeDeleteModal()"></div>
+  <div class="modal-content" style="max-width: 400px;">
+    <div class="modal-header">
+      <h2 class="modal-title">Confirm Delete</h2>
+      <button class="modal-close" onclick="closeDeleteModal()">
+        <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+      </button>
+    </div>
+    <div class="modal-body" style="text-align: center; padding: var(--space-xl);">
+      <div style="width: 64px; height: 64px; margin: 0 auto var(--space-lg); background: var(--danger-light); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center;">
+        <i data-lucide="trash-2" style="width: 28px; height: 28px; color: var(--danger);"></i>
+      </div>
+      <h3 style="margin-bottom: var(--space-sm);">Delete <span id="delete-item-name"></span>?</h3>
+      <p style="color: var(--text-muted);">This action cannot be undone.</p>
+    </div>
+    <div class="modal-footer" style="justify-content: center;">
+      <button class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+      <button class="btn btn-danger" id="confirm-delete-btn" onclick="confirmDelete()">
+        <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+        Delete
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// State
+let currentTab = 'teams';
+let editingId = null;
+let deleteType = null;
+let deleteId = null;
+let selectedMembers = [];
+
+// Sample Data
+let teams = [
+  { id: 1, name: 'Alpha Team', company: 'Acme Industries', members: ['MW', 'JD', 'SC', 'JB'] },
+  { id: 2, name: 'Beta Team', company: 'Acme Industries', members: ['RK', 'TL', 'MH'] },
+  { id: 3, name: 'Gamma Team', company: 'TechCorp Ltd', members: ['AW', 'KP', 'DM', 'JR', 'SL'] },
+  { id: 4, name: 'Delta Team', company: 'Industrial Co', members: ['BN', 'CD', 'EF'] }
+];
+
+let categories = [
+  { id: 1, name: 'Industrial Machinery', responsible: 'Mike Wilson', responsibleInitials: 'MW', company: 'Acme Industries' },
+  { id: 2, name: 'HVAC Systems', responsible: 'Sarah Connor', responsibleInitials: 'SC', company: 'Acme Industries' },
+  { id: 3, name: 'Electrical Equipment', responsible: 'John Davis', responsibleInitials: 'JD', company: 'Acme Industries' },
+  { id: 4, name: 'Hydraulic Systems', responsible: 'James Brown', responsibleInitials: 'JB', company: 'TechCorp Ltd' },
+  { id: 5, name: 'Conveyor Systems', responsible: 'Rachel Kim', responsibleInitials: 'RK', company: 'TechCorp Ltd' },
+  { id: 6, name: 'Safety Equipment', responsible: 'Tom Lee', responsibleInitials: 'TL', company: 'Industrial Co' }
+];
+
+const allMembers = [
+  { id: 1, name: 'Mike Wilson', role: 'Senior Technician', initials: 'MW' },
+  { id: 2, name: 'John Davis', role: 'Technician', initials: 'JD' },
+  { id: 3, name: 'Sarah Connor', role: 'Lead Engineer', initials: 'SC' },
+  { id: 4, name: 'James Brown', role: 'Maintenance Specialist', initials: 'JB' },
+  { id: 5, name: 'Rachel Kim', role: 'Technician', initials: 'RK' },
+  { id: 6, name: 'Tom Lee', role: 'Engineer', initials: 'TL' },
+  { id: 7, name: 'Mary Harris', role: 'Supervisor', initials: 'MH' },
+  { id: 8, name: 'Alex Walker', role: 'Technician', initials: 'AW' },
+  { id: 9, name: 'Kate Park', role: 'Engineer', initials: 'KP' },
+  { id: 10, name: 'David Miller', role: 'Specialist', initials: 'DM' }
+];
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+  renderTeams();
+  renderCategories();
+  renderMemberOptions();
+  populateResponsibleSelect();
+  updateCounts();
+  
+  // Close dropdown on outside click
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.members-select-wrapper')) {
+      document.getElementById('members-dropdown').classList.remove('active');
+    }
+  });
+});
+
+// Tab Switching
+function switchTab(tab) {
+  currentTab = tab;
+  
+  document.querySelectorAll('.page-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.tab === tab);
+  });
+  
+  document.getElementById('teams-section').classList.toggle('active', tab === 'teams');
+  document.getElementById('categories-section').classList.toggle('active', tab === 'categories');
+  
+  document.getElementById('add-btn-text').textContent = tab === 'teams' ? 'Add Team' : 'Add Category';
+}
+
+// Render Teams
+function renderTeams(filter = '') {
+  const grid = document.getElementById('teams-grid');
+  const empty = document.getElementById('teams-empty');
+  
+  const filteredTeams = teams.filter(t => 
+    t.name.toLowerCase().includes(filter.toLowerCase()) ||
+    t.company.toLowerCase().includes(filter.toLowerCase())
+  );
+  
+  if (filteredTeams.length === 0) {
+    grid.style.display = 'none';
+    empty.style.display = 'block';
+    return;
+  }
+  
+  grid.style.display = 'grid';
+  empty.style.display = 'none';
+  
+  grid.innerHTML = filteredTeams.map(team => `
+    <div class="management-card">
+      <div class="card-top">
+        <div class="card-icon-wrapper team">
+          <i data-lucide="users" style="width: 24px; height: 24px;"></i>
+        </div>
+        <div class="card-actions">
+          <button class="card-action-btn" onclick="editTeam(${team.id})" title="Edit">
+            <i data-lucide="pencil" style="width: 16px; height: 16px;"></i>
+          </button>
+          <button class="card-action-btn danger" onclick="deleteItem('team', ${team.id}, '${team.name}')" title="Delete">
+            <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+          </button>
+        </div>
+      </div>
+      
+      <h3 class="card-title">${team.name}</h3>
+      <div class="card-company">
+        <i data-lucide="building-2" style="width: 14px; height: 14px;"></i>
+        ${team.company}
+      </div>
+      
+      <div class="team-members">
+        <div class="member-avatars">
+          ${team.members.slice(0, 4).map(m => `
+            <div class="member-avatar">${m}</div>
+          `).join('')}
+          ${team.members.length > 4 ? `
+            <div class="member-avatar more">+${team.members.length - 4}</div>
+          ` : ''}
+        </div>
+        <span class="member-count">${team.members.length} member${team.members.length !== 1 ? 's' : ''}</span>
+      </div>
+    </div>
+  `).join('');
+  
+  lucide.createIcons();
+}
+
+// Render Categories
+function renderCategories(filter = '') {
+  const grid = document.getElementById('categories-grid');
+  const empty = document.getElementById('categories-empty');
+  
+  const filteredCategories = categories.filter(c => 
+    c.name.toLowerCase().includes(filter.toLowerCase()) ||
+    c.company.toLowerCase().includes(filter.toLowerCase()) ||
+    c.responsible.toLowerCase().includes(filter.toLowerCase())
+  );
+  
+  if (filteredCategories.length === 0) {
+    grid.style.display = 'none';
+    empty.style.display = 'block';
+    return;
+  }
+  
+  grid.style.display = 'grid';
+  empty.style.display = 'none';
+  
+  grid.innerHTML = filteredCategories.map(cat => `
+    <div class="management-card">
+      <div class="card-top">
+        <div class="card-icon-wrapper category">
+          <i data-lucide="folder" style="width: 24px; height: 24px;"></i>
+        </div>
+        <div class="card-actions">
+          <button class="card-action-btn" onclick="editCategory(${cat.id})" title="Edit">
+            <i data-lucide="pencil" style="width: 16px; height: 16px;"></i>
+          </button>
+          <button class="card-action-btn danger" onclick="deleteItem('category', ${cat.id}, '${cat.name}')" title="Delete">
+            <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+          </button>
+        </div>
+      </div>
+      
+      <h3 class="card-title">${cat.name}</h3>
+      <div class="card-company">
+        <i data-lucide="building-2" style="width: 14px; height: 14px;"></i>
+        ${cat.company}
+      </div>
+      
+      <div class="responsible-info">
+        <div class="responsible-avatar">${cat.responsibleInitials}</div>
+        <div class="responsible-details">
+          <div class="responsible-name">${cat.responsible}</div>
+          <div class="responsible-label">Responsible Person</div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+  
+  lucide.createIcons();
+}
+
+// Filter Functions
+function filterTeams(value) {
+  renderTeams(value);
+}
+
+function filterCategories(value) {
+  renderCategories(value);
+}
+
+// Update Counts
+function updateCounts() {
+  document.getElementById('teams-count').textContent = teams.length;
+  document.getElementById('categories-count').textContent = categories.length;
+}
+
+// Modal Functions
+function openAddModal() {
+  editingId = null;
+  
+  if (currentTab === 'teams') {
+    document.getElementById('team-modal-title').textContent = 'Add Team';
+    document.getElementById('team-save-btn-text').textContent = 'Save Team';
+    document.getElementById('team-form').reset();
+    selectedMembers = [];
+    renderSelectedMembers();
+    document.getElementById('team-modal').classList.add('active');
+  } else {
+    document.getElementById('category-modal-title').textContent = 'Add Category';
+    document.getElementById('category-save-btn-text').textContent = 'Save Category';
+    document.getElementById('category-form').reset();
+    document.getElementById('category-modal').classList.add('active');
+  }
+  
+  document.getElementById('modal-overlay').classList.add('active');
+}
+
+function closeModal() {
+  document.getElementById('team-modal').classList.remove('active');
+  document.getElementById('category-modal').classList.remove('active');
+  document.getElementById('modal-overlay').classList.remove('active');
+}
+
+// Team CRUD
+function editTeam(id) {
+  const team = teams.find(t => t.id === id);
+  if (!team) return;
+  
+  editingId = id;
+  document.getElementById('team-modal-title').textContent = 'Edit Team';
+  document.getElementById('team-save-btn-text').textContent = 'Update Team';
+  document.getElementById('team-id').value = id;
+  document.getElementById('team-name').value = team.name;
+  document.getElementById('team-company').value = team.company;
+  
+  // Set selected members
+  selectedMembers = team.members.map(initials => {
+    const member = allMembers.find(m => m.initials === initials);
+    return member ? member.id : null;
+  }).filter(id => id !== null);
+  
+  renderSelectedMembers();
+  
+  document.getElementById('team-modal').classList.add('active');
+  document.getElementById('modal-overlay').classList.add('active');
+}
+
+function saveTeam(e) {
+  e.preventDefault();
+  
+  const name = document.getElementById('team-name').value.trim();
+  const company = document.getElementById('team-company').value.trim();
+  
+  // Validation
+  let hasError = false;
+  
+  if (!name) {
+    document.getElementById('team-name-error').textContent = 'Team name is required';
+    document.getElementById('team-name').classList.add('error');
+    hasError = true;
+  } else {
+    document.getElementById('team-name-error').textContent = '';
+    document.getElementById('team-name').classList.remove('error');
+  }
+  
+  if (!company) {
+    document.getElementById('team-company-error').textContent = 'Company name is required';
+    document.getElementById('team-company').classList.add('error');
+    hasError = true;
+  } else {
+    document.getElementById('team-company-error').textContent = '';
+    document.getElementById('team-company').classList.remove('error');
+  }
+  
+  if (selectedMembers.length === 0) {
+    document.getElementById('team-members-error').textContent = 'Please select at least one member';
+    hasError = true;
+  } else {
+    document.getElementById('team-members-error').textContent = '';
+  }
+  
+  if (hasError) return;
+  
+  const memberInitials = selectedMembers.map(id => {
+    const member = allMembers.find(m => m.id === id);
+    return member ? member.initials : '';
+  });
+  
+  if (editingId) {
+    // Update
+    const index = teams.findIndex(t => t.id === editingId);
+    if (index !== -1) {
+      teams[index] = { ...teams[index], name, company, members: memberInitials };
+    }
+    showToast('Success', 'Team updated successfully', 'success');
+  } else {
+    // Create
+    const newId = Math.max(...teams.map(t => t.id), 0) + 1;
+    teams.push({ id: newId, name, company, members: memberInitials });
+    showToast('Success', 'Team created successfully', 'success');
+  }
+  
+  renderTeams();
+  updateCounts();
+  closeModal();
+}
+
+// Category CRUD
+function editCategory(id) {
+  const category = categories.find(c => c.id === id);
+  if (!category) return;
+  
+  editingId = id;
+  document.getElementById('category-modal-title').textContent = 'Edit Category';
+  document.getElementById('category-save-btn-text').textContent = 'Update Category';
+  document.getElementById('category-id').value = id;
+  document.getElementById('category-name').value = category.name;
+  document.getElementById('category-company').value = category.company;
+  
+  // Find responsible person
+  const responsible = allMembers.find(m => m.name === category.responsible);
+  if (responsible) {
+    document.getElementById('category-responsible').value = responsible.id;
+  }
+  
+  document.getElementById('category-modal').classList.add('active');
+  document.getElementById('modal-overlay').classList.add('active');
+}
+
+function saveCategory(e) {
+  e.preventDefault();
+  
+  const name = document.getElementById('category-name').value.trim();
+  const company = document.getElementById('category-company').value.trim();
+  const responsibleId = document.getElementById('category-responsible').value;
+  
+  // Validation
+  let hasError = false;
+  
+  if (!name) {
+    document.getElementById('category-name-error').textContent = 'Category name is required';
+    document.getElementById('category-name').classList.add('error');
+    hasError = true;
+  } else {
+    document.getElementById('category-name-error').textContent = '';
+    document.getElementById('category-name').classList.remove('error');
+  }
+  
+  if (!company) {
+    document.getElementById('category-company-error').textContent = 'Company name is required';
+    document.getElementById('category-company').classList.add('error');
+    hasError = true;
+  } else {
+    document.getElementById('category-company-error').textContent = '';
+    document.getElementById('category-company').classList.remove('error');
+  }
+  
+  if (!responsibleId) {
+    document.getElementById('category-responsible-error').textContent = 'Please select a responsible person';
+    hasError = true;
+  } else {
+    document.getElementById('category-responsible-error').textContent = '';
+  }
+  
+  if (hasError) return;
+  
+  const responsible = allMembers.find(m => m.id === parseInt(responsibleId));
+  
+  if (editingId) {
+    // Update
+    const index = categories.findIndex(c => c.id === editingId);
+    if (index !== -1) {
+      categories[index] = { 
+        ...categories[index], 
+        name, 
+        company, 
+        responsible: responsible.name,
+        responsibleInitials: responsible.initials
+      };
+    }
+    showToast('Success', 'Category updated successfully', 'success');
+  } else {
+    // Create
+    const newId = Math.max(...categories.map(c => c.id), 0) + 1;
+    categories.push({ 
+      id: newId, 
+      name, 
+      company, 
+      responsible: responsible.name,
+      responsibleInitials: responsible.initials
+    });
+    showToast('Success', 'Category created successfully', 'success');
+  }
+  
+  renderCategories();
+  updateCounts();
+  closeModal();
+}
+
+// Delete Functions
+function deleteItem(type, id, name) {
+  deleteType = type;
+  deleteId = id;
+  document.getElementById('delete-item-name').textContent = name;
+  document.getElementById('delete-modal').style.display = 'flex';
+  lucide.createIcons();
+}
+
+function closeDeleteModal() {
+  document.getElementById('delete-modal').style.display = 'none';
+  deleteType = null;
+  deleteId = null;
+}
+
+function confirmDelete() {
+  if (deleteType === 'team') {
+    teams = teams.filter(t => t.id !== deleteId);
+    renderTeams();
+    showToast('Success', 'Team deleted successfully', 'success');
+  } else if (deleteType === 'category') {
+    categories = categories.filter(c => c.id !== deleteId);
+    renderCategories();
+    showToast('Success', 'Category deleted successfully', 'success');
+  }
+  
+  updateCounts();
+  closeDeleteModal();
+}
+
+// Member Selection
+function renderMemberOptions(filter = '') {
+  const dropdown = document.getElementById('members-dropdown');
+  
+  const filteredMembers = allMembers.filter(m => 
+    m.name.toLowerCase().includes(filter.toLowerCase()) ||
+    m.role.toLowerCase().includes(filter.toLowerCase())
+  );
+  
+  dropdown.innerHTML = filteredMembers.map(member => `
+    <div class="member-option ${selectedMembers.includes(member.id) ? 'selected' : ''}" onclick="toggleMember(${member.id})">
+      <div class="member-option-avatar">${member.initials}</div>
+      <div class="member-option-info">
+        <div class="member-option-name">${member.name}</div>
+        <div class="member-option-role">${member.role}</div>
+      </div>
+      ${selectedMembers.includes(member.id) ? '<i data-lucide="check" style="width: 18px; height: 18px; color: var(--primary);"></i>' : ''}
+    </div>
+  `).join('');
+  
+  lucide.createIcons();
+}
+
+function renderSelectedMembers() {
+  const container = document.getElementById('selected-members');
+  
+  container.innerHTML = selectedMembers.map(id => {
+    const member = allMembers.find(m => m.id === id);
+    return member ? `
+      <div class="member-tag">
+        ${member.name}
+        <button type="button" class="member-tag-remove" onclick="removeMember(${id})">
+          <i data-lucide="x" style="width: 12px; height: 12px;"></i>
+        </button>
+      </div>
+    ` : '';
+  }).join('');
+  
+  lucide.createIcons();
+}
+
+function showMemberDropdown() {
+  document.getElementById('members-dropdown').classList.add('active');
+  renderMemberOptions();
+}
+
+function filterMemberOptions(value) {
+  renderMemberOptions(value);
+  document.getElementById('members-dropdown').classList.add('active');
+}
+
+function toggleMember(id) {
+  if (selectedMembers.includes(id)) {
+    selectedMembers = selectedMembers.filter(m => m !== id);
+  } else {
+    selectedMembers.push(id);
+  }
+  
+  renderSelectedMembers();
+  renderMemberOptions(document.getElementById('member-search').value);
+}
+
+function removeMember(id) {
+  selectedMembers = selectedMembers.filter(m => m !== id);
+  renderSelectedMembers();
+  renderMemberOptions(document.getElementById('member-search').value);
+}
+
+function populateResponsibleSelect() {
+  const select = document.getElementById('category-responsible');
+  select.innerHTML = '<option value="">Select responsible person</option>' +
+    allMembers.map(m => `<option value="${m.id}">${m.name} - ${m.role}</option>`).join('');
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closeModal();
+    closeDeleteModal();
+  }
+});
+</script>
+{% endblock %}

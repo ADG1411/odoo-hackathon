@@ -9,16 +9,18 @@
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-card);
     overflow: hidden;
+    width: 100%;
   }
   
   .calendar-toolbar {
-    padding: var(--space-lg);
+    padding: var(--space-md) var(--space-lg);
     border-bottom: 1px solid var(--border-light);
     display: flex;
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
     gap: var(--space-md);
+    background: var(--bg-card);
   }
   
   .calendar-nav-group {
@@ -28,10 +30,11 @@
   }
   
   .calendar-title {
-    font-size: 1.25rem;
+    font-size: 1.125rem;
     font-weight: 600;
-    min-width: 200px;
+    min-width: 180px;
     text-align: center;
+    margin: 0 var(--space-sm);
   }
   
   .calendar-view-switcher {
@@ -67,11 +70,22 @@
     padding: var(--space-lg);
   }
   
+  /* Month View */
+  .month-view {
+    display: none;
+  }
+  
+  .month-view.active {
+    display: block;
+  }
+  
   .calendar-weekdays {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    border-bottom: 1px solid var(--border-light);
-    margin-bottom: var(--space-md);
+    gap: 1px;
+    background: var(--border-light);
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    overflow: hidden;
   }
   
   .weekday {
@@ -82,6 +96,7 @@
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: var(--text-muted);
+    background: var(--bg-hover);
   }
   
   .calendar-days {
@@ -89,16 +104,18 @@
     grid-template-columns: repeat(7, 1fr);
     gap: 1px;
     background: var(--border-light);
-    border-radius: var(--radius-md);
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
     overflow: hidden;
   }
   
   .calendar-day {
     background: var(--bg-card);
-    min-height: 140px;
+    min-height: 120px;
     padding: var(--space-sm);
     cursor: pointer;
     transition: background var(--transition-fast);
+    display: flex;
+    flex-direction: column;
   }
   
   .calendar-day:hover {
@@ -106,8 +123,12 @@
   }
   
   .calendar-day.other-month {
-    background: var(--bg-hover);
-    opacity: 0.6;
+    background: #f8fafc;
+    opacity: 0.5;
+  }
+  
+  .calendar-day.other-month .day-number {
+    color: var(--text-muted);
   }
   
   .calendar-day.today {
@@ -121,46 +142,50 @@
   
   .day-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
-    margin-bottom: var(--space-sm);
+    margin-bottom: var(--space-xs);
+    min-height: 32px;
   }
   
   .day-number {
-    font-size: 0.9375rem;
+    font-size: 0.875rem;
     font-weight: 500;
     color: var(--text-primary);
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-full);
   }
   
   .calendar-day.today .day-number {
     background: var(--primary);
     color: white;
-    width: 28px;
-    height: 28px;
-    border-radius: var(--radius-full);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.8125rem;
+    font-weight: 600;
   }
   
   .day-events {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 3px;
+    flex: 1;
+    overflow: hidden;
   }
   
   .calendar-event {
-    padding: 4px 8px;
-    font-size: 0.75rem;
+    padding: 3px 6px;
+    font-size: 0.6875rem;
     font-weight: 500;
-    border-radius: var(--radius-sm);
+    border-radius: 4px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     cursor: pointer;
     transition: all var(--transition-fast);
     border-left: 3px solid transparent;
+    line-height: 1.3;
   }
   
   .calendar-event:hover {
@@ -204,8 +229,11 @@
   
   /* Sidebar legend & upcoming */
   .calendar-sidebar {
-    width: 320px;
+    width: 280px;
     flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
   }
   
   .legend-item {
@@ -237,10 +265,11 @@
   
   .week-grid {
     display: grid;
-    grid-template-columns: 60px repeat(7, 1fr);
+    grid-template-columns: 70px repeat(7, 1fr);
     border: 1px solid var(--border-light);
     border-radius: var(--radius-md);
     overflow: hidden;
+    background: var(--bg-card);
   }
   
   .week-header {
@@ -251,13 +280,33 @@
     padding: var(--space-md);
     text-align: center;
     background: var(--bg-hover);
-    border-bottom: 1px solid var(--border-light);
+    border-bottom: 2px solid var(--border-light);
+    border-right: 1px solid var(--border-light);
     font-weight: 500;
     font-size: 0.8125rem;
   }
   
+  .week-header-cell:first-child {
+    border-right: 1px solid var(--border-light);
+  }
+  
+  .week-header-cell:last-child {
+    border-right: none;
+  }
+  
   .week-header-cell.today {
     background: var(--primary-light);
+  }
+  
+  .week-header-cell.today .week-day-number {
+    background: var(--primary);
+    color: white;
+    border-radius: var(--radius-full);
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
   
   .time-slot {
@@ -265,7 +314,9 @@
     font-size: 0.75rem;
     color: var(--text-muted);
     text-align: right;
+    padding-right: var(--space-md);
     border-right: 1px solid var(--border-light);
+    border-bottom: 1px solid var(--border-light);
     background: var(--bg-hover);
   }
   
@@ -273,11 +324,16 @@
     min-height: 60px;
     border-right: 1px solid var(--border-light);
     border-bottom: 1px solid var(--border-light);
-    padding: 2px;
+    padding: 4px;
     position: relative;
+    background: var(--bg-card);
   }
   
-  .week-cell:last-child {
+  .week-cell:nth-child(8n+1) {
+    border-right: 1px solid var(--border-light);
+  }
+  
+  .week-grid > .week-cell:nth-child(8n) {
     border-right: none;
   }
   
@@ -375,7 +431,7 @@
     }
     
     .calendar-day {
-      min-height: 100px;
+      min-height: 90px;
     }
   }
   
@@ -387,10 +443,16 @@
     
     .day-number {
       font-size: 0.75rem;
+      width: 24px;
+      height: 24px;
+    }
+    
+    .day-header {
+      min-height: 26px;
     }
     
     .calendar-event {
-      font-size: 0.6875rem;
+      font-size: 0.625rem;
       padding: 2px 4px;
     }
     
@@ -440,10 +502,10 @@
     <!-- Page Body -->
     <div class="page-body">
       <div class="page-body-inner">
-        <div style="display: flex; gap: var(--space-xl);">
+        <div style="display: flex; gap: var(--space-xl); align-items: flex-start;">
           
           <!-- Main Calendar -->
-          <div style="flex: 1;">
+          <div style="flex: 1; min-width: 0;">
             <div class="calendar-wrapper">
               <!-- Toolbar -->
               <div class="calendar-toolbar">
@@ -475,7 +537,6 @@
                   <div class="weekday">Fri</div>
                   <div class="weekday">Sat</div>
                 </div>
-                
                 <div class="calendar-days" id="calendar-days">
                   <!-- Days generated by JavaScript -->
                 </div>
@@ -500,7 +561,7 @@
           <!-- Sidebar -->
           <div class="calendar-sidebar">
             <!-- Legend -->
-            <div class="widget" style="margin-bottom: var(--space-lg);">
+            <div class="widget">
               <div class="widget-header">
                 <h3 class="widget-title">Priority Legend</h3>
               </div>
@@ -643,10 +704,11 @@ function renderCalendar() {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
   
+  // First day of the month
   const firstDay = new Date(year, month, 1);
-  const lastDay = new Date(year, month + 1, 0);
+  // Start from the Sunday of the week containing the first day
   const startDate = new Date(firstDay);
-  startDate.setDate(startDate.getDate() - firstDay.getDay());
+  startDate.setDate(1 - firstDay.getDay());
   
   const daysContainer = document.getElementById('calendar-days');
   daysContainer.innerHTML = '';
@@ -654,9 +716,11 @@ function renderCalendar() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   
+  // Generate 42 days (6 weeks)
   for (let i = 0; i < 42; i++) {
     const date = new Date(startDate);
     date.setDate(startDate.getDate() + i);
+    date.setHours(0, 0, 0, 0);
     
     const isOtherMonth = date.getMonth() !== month;
     const isToday = date.getTime() === today.getTime();
@@ -692,29 +756,37 @@ function renderCalendar() {
 function renderWeekView() {
   const startOfWeek = new Date(currentDate);
   startOfWeek.setDate(currentDate.getDate() - currentDate.getDay());
+  startOfWeek.setHours(0, 0, 0, 0);
   
   const weekGrid = document.getElementById('week-grid');
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   
-  let html = '<div class="week-header"><div class="week-header-cell"></div>';
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  
+  // Build header row
+  let html = '<div class="week-header-cell" style="border-bottom: 2px solid var(--border-light);"></div>';
   
   for (let i = 0; i < 7; i++) {
     const date = new Date(startOfWeek);
     date.setDate(startOfWeek.getDate() + i);
+    date.setHours(0, 0, 0, 0);
     const isToday = date.getTime() === today.getTime();
+    const dayName = dayNames[date.getDay()];
+    
     html += `
       <div class="week-header-cell ${isToday ? 'today' : ''}">
-        <div style="font-size: 0.75rem; color: var(--text-muted);">${['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][i]}</div>
-        <div style="font-size: 1.125rem; font-weight: 600;">${date.getDate()}</div>
+        <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">${dayName}</div>
+        <div class="week-day-number" style="font-size: 1.25rem; font-weight: 600; margin-top: 2px;">${date.getDate()}</div>
       </div>
     `;
   }
-  html += '</div>';
   
-  // Time slots (8 AM - 6 PM)
-  for (let hour = 8; hour <= 18; hour++) {
-    html += `<div class="time-slot">${hour > 12 ? hour - 12 : hour}${hour >= 12 ? 'PM' : 'AM'}</div>`;
+  // Time slots (7 AM - 7 PM)
+  for (let hour = 7; hour <= 19; hour++) {
+    const hourDisplay = hour === 0 ? 12 : (hour > 12 ? hour - 12 : hour);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    html += `<div class="time-slot">${hourDisplay} ${ampm}</div>`;
     
     for (let day = 0; day < 7; day++) {
       const date = new Date(startOfWeek);
@@ -725,7 +797,7 @@ function renderWeekView() {
       html += `
         <div class="week-cell">
           ${hourEvents.map(e => `
-            <div class="calendar-event priority-${e.priority}" style="font-size: 0.6875rem;" onclick="viewEvent(${e.id})">
+            <div class="calendar-event priority-${e.priority}" style="font-size: 0.6875rem; padding: 4px 6px;" onclick="viewEvent(${e.id})">
               ${e.title}
             </div>
           `).join('')}

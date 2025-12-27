@@ -40,13 +40,13 @@ def equipment_detail(id):
 @views.route('/categories')
 def categories():
     """Equipment categories page"""
-    return render_template('equipment/categories.html')
+    return render_template('categories.html')
 
 
 @views.route('/teams')
 def teams():
     """Teams management page"""
-    return render_template('teams/list.html')
+    return render_template('teams.html')
 
 
 @views.route('/teams/<int:id>')
