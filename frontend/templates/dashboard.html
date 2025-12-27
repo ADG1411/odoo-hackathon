@@ -1,0 +1,377 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - GearGuard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Dashboard</h1>
+        <p class="text-muted">Welcome to GearGuard - Your Maintenance Command Center</p>
+    </div>
+    <div>
+        <button class="btn btn-primary" onclick="showCreateRequestModal()">
+            <i class="bi bi-plus-lg"></i> New Request
+        </button>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6 col-xl-3">
+        <div class="stat-card stat-card-primary">
+            <div class="stat-icon">
+                <i class="bi bi-box-seam"></i>
+            </div>
+            <div class="stat-content">
+                <h3 id="totalEquipment">-</h3>
+                <p>Total Equipment</p>
+            </div>
+            <div class="stat-footer">
+                <span class="badge bg-success" id="operationalCount">-</span> Operational
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-xl-3">
+        <div class="stat-card stat-card-warning">
+            <div class="stat-icon">
+                <i class="bi bi-wrench"></i>
+            </div>
+            <div class="stat-content">
+                <h3 id="openRequests">-</h3>
+                <p>Open Requests</p>
+            </div>
+            <div class="stat-footer">
+                <span class="badge bg-danger" id="overdueCount">-</span> Overdue
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-xl-3">
+        <div class="stat-card stat-card-danger">
+            <div class="stat-icon">
+                <i class="bi bi-exclamation-triangle"></i>
+            </div>
+            <div class="stat-content">
+                <h3 id="inMaintenance">-</h3>
+                <p>In Maintenance</p>
+            </div>
+            <div class="stat-footer">
+                <span class="badge bg-secondary" id="brokenCount">-</span> Broken
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-xl-3">
+        <div class="stat-card stat-card-success">
+            <div class="stat-icon">
+                <i class="bi bi-people"></i>
+            </div>
+            <div class="stat-content">
+                <h3 id="activeTeams">-</h3>
+                <p>Active Teams</p>
+            </div>
+            <div class="stat-footer">
+                <a href="/teams" class="text-success">View Teams →</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Requests by Stage</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="requestsByStageChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Priority Distribution</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="priorityChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Requests -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Recent Maintenance Requests</h5>
+                <a href="/requests" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Reference</th>
+                                <th>Title</th>
+                                <th>Equipment</th>
+                                <th>Priority</th>
+                                <th>Stage</th>
+                                <th>Team</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentRequestsTable">
+                            <tr>
+                                <td colspan="7" class="text-center py-4">
+                                    <div class="spinner-border spinner-border-sm" role="status"></div>
+                                    Loading...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Request Modal -->
+<div class="modal fade" id="createRequestModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create Maintenance Request</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="createRequestForm" onsubmit="createRequest(event)">
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Title *</label>
+                            <input type="text" class="form-control" name="name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Equipment</label>
+                            <select class="form-select" name="equipment_id" id="equipmentSelect">
+                                <option value="">Select Equipment</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Team</label>
+                            <select class="form-select" name="team_id" id="teamSelect">
+                                <option value="">Select Team</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Type</label>
+                            <select class="form-select" name="request_type">
+                                <option value="corrective">Corrective</option>
+                                <option value="preventive">Preventive</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Priority</label>
+                            <select class="form-select" name="priority">
+                                <option value="low">Low</option>
+                                <option value="normal" selected>Normal</option>
+                                <option value="high">High</option>
+                                <option value="urgent">Urgent</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Scheduled Date</label>
+                            <input type="datetime-local" class="form-control" name="scheduled_date">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Deadline</label>
+                            <input type="datetime-local" class="form-control" name="deadline">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" name="description" rows="3"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Requester Name</label>
+                            <input type="text" class="form-control" name="requester_name">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Requester Email</label>
+                            <input type="email" class="form-control" name="requester_email">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+let requestsByStageChart, priorityChart;
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadDashboardStats();
+    loadRecentRequests();
+    loadCharts();
+    loadFormData();
+});
+
+async function loadDashboardStats() {
+    try {
+        const response = await fetch('/api/dashboard/stats');
+        const data = await response.json();
+        
+        document.getElementById('totalEquipment').textContent = data.equipment.total;
+        document.getElementById('operationalCount').textContent = data.equipment.operational;
+        document.getElementById('openRequests').textContent = data.requests.open;
+        document.getElementById('overdueCount').textContent = data.requests.overdue;
+        document.getElementById('inMaintenance').textContent = data.equipment.maintenance;
+        document.getElementById('brokenCount').textContent = data.equipment.broken;
+        document.getElementById('activeTeams').textContent = data.teams;
+    } catch (error) {
+        console.error('Error loading stats:', error);
+    }
+}
+
+async function loadRecentRequests() {
+    try {
+        const response = await fetch('/api/dashboard/recent-requests');
+        const requests = await response.json();
+        
+        const tbody = document.getElementById('recentRequestsTable');
+        
+        if (requests.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">No requests yet</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = requests.map(req => `
+            <tr onclick="window.location='/requests/${req.id}'" style="cursor: pointer;">
+                <td><code>${req.reference}</code></td>
+                <td>
+                    ${req.name}
+                    ${req.is_overdue ? '<span class="badge bg-danger ms-1">Overdue</span>' : ''}
+                </td>
+                <td>${req.equipment_code || '-'}</td>
+                <td><span class="badge bg-${req.priority_color}">${req.priority}</span></td>
+                <td><span class="badge" style="background-color: ${req.stage_color}">${req.stage_name}</span></td>
+                <td>${req.team_name || '-'}</td>
+                <td>${new Date(req.request_date).toLocaleDateString()}</td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        console.error('Error loading requests:', error);
+    }
+}
+
+async function loadCharts() {
+    // Requests by Stage
+    const stageResponse = await fetch('/api/dashboard/requests-by-stage');
+    const stageData = await stageResponse.json();
+    
+    const ctx1 = document.getElementById('requestsByStageChart').getContext('2d');
+    requestsByStageChart = new Chart(ctx1, {
+        type: 'bar',
+        data: {
+            labels: stageData.map(s => s.name),
+            datasets: [{
+                label: 'Requests',
+                data: stageData.map(s => s.count),
+                backgroundColor: stageData.map(s => s.color),
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+    
+    // Priority Distribution
+    const priorityResponse = await fetch('/api/dashboard/requests-by-priority');
+    const priorityData = await priorityResponse.json();
+    
+    const ctx2 = document.getElementById('priorityChart').getContext('2d');
+    priorityChart = new Chart(ctx2, {
+        type: 'doughnut',
+        data: {
+            labels: priorityData.map(p => p.priority.charAt(0).toUpperCase() + p.priority.slice(1)),
+            datasets: [{
+                data: priorityData.map(p => p.count),
+                backgroundColor: ['#6c757d', '#17a2b8', '#ffc107', '#dc3545']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+}
+
+async function loadFormData() {
+    // Load equipment
+    const eqResponse = await fetch('/api/equipment');
+    const equipment = await eqResponse.json();
+    const eqSelect = document.getElementById('equipmentSelect');
+    equipment.forEach(eq => {
+        eqSelect.innerHTML += `<option value="${eq.id}">${eq.code} - ${eq.name}</option>`;
+    });
+    
+    // Load teams
+    const teamResponse = await fetch('/api/teams');
+    const teams = await teamResponse.json();
+    const teamSelect = document.getElementById('teamSelect');
+    teams.forEach(team => {
+        teamSelect.innerHTML += `<option value="${team.id}">${team.name}</option>`;
+    });
+}
+
+function showCreateRequestModal() {
+    new bootstrap.Modal(document.getElementById('createRequestModal')).show();
+}
+
+async function createRequest(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+    
+    // Convert empty strings to null
+    Object.keys(data).forEach(key => {
+        if (data[key] === '') data[key] = null;
+    });
+    
+    try {
+        const response = await fetch('/api/requests', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        
+        if (response.ok) {
+            bootstrap.Modal.getInstance(document.getElementById('createRequestModal')).hide();
+            form.reset();
+            showToast('Request created successfully!', 'success');
+            loadDashboardStats();
+            loadRecentRequests();
+            loadCharts();
+        } else {
+            throw new Error('Failed to create request');
+        }
+    } catch (error) {
+        showToast('Error creating request', 'danger');
+    }
+}
+</script>
+{% endblock %}

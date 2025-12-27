@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}GearGuard{% endblock %}</title>
+    
+    <!-- Bootstrap 5.3 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="/" class="sidebar-brand">
+                <i class="bi bi-gear-wide-connected"></i>
+                <span>GearGuard</span>
+            </a>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="/" class="nav-link {% if request.path == '/' %}active{% endif %}">
+                        <i class="bi bi-speedometer2"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                
+                <li class="nav-section">Maintenance</li>
+                
+                <li class="nav-item">
+                    <a href="/requests/kanban" class="nav-link {% if 'kanban' in request.path %}active{% endif %}">
+                        <i class="bi bi-kanban"></i>
+                        <span>Kanban Board</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/requests" class="nav-link {% if request.path == '/requests' %}active{% endif %}">
+                        <i class="bi bi-list-task"></i>
+                        <span>All Requests</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/calendar" class="nav-link {% if 'calendar' in request.path %}active{% endif %}">
+                        <i class="bi bi-calendar3"></i>
+                        <span>Calendar</span>
+                    </a>
+                </li>
+                
+                <li class="nav-section">Assets</li>
+                
+                <li class="nav-item">
+                    <a href="/equipment" class="nav-link {% if request.path == '/equipment' %}active{% endif %}">
+                        <i class="bi bi-box-seam"></i>
+                        <span>Equipment</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/categories" class="nav-link {% if 'categories' in request.path %}active{% endif %}">
+                        <i class="bi bi-tags"></i>
+                        <span>Categories</span>
+                    </a>
+                </li>
+                
+                <li class="nav-section">Organization</li>
+                
+                <li class="nav-item">
+                    <a href="/teams" class="nav-link {% if 'teams' in request.path %}active{% endif %}">
+                        <i class="bi bi-people"></i>
+                        <span>Teams</span>
+                    </a>
+                </li>
+                
+                <li class="nav-section">Analytics</li>
+                
+                <li class="nav-item">
+                    <a href="/reports" class="nav-link {% if 'reports' in request.path %}active{% endif %}">
+                        <i class="bi bi-graph-up"></i>
+                        <span>Reports</span>
+                    </a>
+                </li>
+                
+                <li class="nav-section">System</li>
+                
+                <li class="nav-item">
+                    <a href="/settings" class="nav-link {% if 'settings' in request.path %}active{% endif %}">
+                        <i class="bi bi-gear"></i>
+                        <span>Settings</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <div class="team-info">
+                <small class="text-muted">Team QuantCoder</small>
+                <br>
+                <small class="text-muted">GCET Hackathon 2025</small>
+            </div>
+        </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Navbar -->
+        <nav class="top-navbar">
+            <button class="btn btn-link sidebar-toggle" id="sidebarToggle">
+                <i class="bi bi-list"></i>
+            </button>
+            
+            <div class="navbar-search">
+                <i class="bi bi-search"></i>
+                <input type="text" class="form-control" placeholder="Search equipment, requests...">
+            </div>
+            
+            <div class="navbar-actions">
+                <button class="btn btn-link" onclick="toggleTheme()">
+                    <i class="bi bi-moon-fill" id="themeIcon"></i>
+                </button>
+                <button class="btn btn-link position-relative">
+                    <i class="bi bi-bell"></i>
+                    <span class="notification-badge">3</span>
+                </button>
+                <div class="user-avatar">
+                    <i class="bi bi-person-circle"></i>
+                </div>
+            </div>
+        </nav>
+        
+        <!-- Page Content -->
+        <div class="page-content">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+    
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
