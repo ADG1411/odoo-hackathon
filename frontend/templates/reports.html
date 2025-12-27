@@ -74,6 +74,108 @@
         
         <!-- Charts Section -->
         <div class="reports-grid">
+          <!-- Pivot Report: Requests by Team -->
+          <div class="report-card full-width">
+            <div class="report-header" style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <h3 class="report-title">
+                  <i data-lucide="users" style="width: 20px; height: 20px; vertical-align: middle; margin-right: 8px;"></i>
+                  Requests by Team (Pivot Report)
+                </h3>
+                <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Number of maintenance requests assigned to each team</p>
+              </div>
+              <div class="chart-view-toggle">
+                <button class="view-btn active" data-view="bar" data-chart="team" onclick="toggleChartView('team', 'bar')">
+                  <i data-lucide="bar-chart-3" style="width: 16px; height: 16px;"></i>
+                </button>
+                <button class="view-btn" data-view="table" data-chart="team" onclick="toggleChartView('team', 'table')">
+                  <i data-lucide="table" style="width: 16px; height: 16px;"></i>
+                </button>
+              </div>
+            </div>
+            <div class="report-body">
+              <div id="team-chart-container">
+                <div class="chart-container" id="team-chart">
+                  <div class="chart-placeholder">
+                    <i data-lucide="loader-2" class="spin" style="width: 24px; height: 24px;"></i>
+                    <span style="margin-left: 8px;">Loading team data...</span>
+                  </div>
+                </div>
+              </div>
+              <div id="team-table-container" style="display: none;">
+                <table class="data-table pivot-table">
+                  <thead>
+                    <tr>
+                      <th>Team</th>
+                      <th class="text-center">Total</th>
+                      <th class="text-center">Open</th>
+                      <th class="text-center">Completed</th>
+                      <th class="text-center">Urgent</th>
+                      <th class="text-center">High</th>
+                      <th class="text-center">Normal</th>
+                      <th class="text-center">Low</th>
+                    </tr>
+                  </thead>
+                  <tbody id="team-table-body">
+                    <tr><td colspan="8" style="text-align: center; padding: 40px;">Loading...</td></tr>
+                  </tbody>
+                  <tfoot id="team-table-footer"></tfoot>
+                </table>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Pivot Report: Requests by Equipment Category -->
+          <div class="report-card full-width">
+            <div class="report-header" style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <h3 class="report-title">
+                  <i data-lucide="folder" style="width: 20px; height: 20px; vertical-align: middle; margin-right: 8px;"></i>
+                  Requests by Equipment Category (Pivot Report)
+                </h3>
+                <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Number of maintenance requests grouped by equipment category</p>
+              </div>
+              <div class="chart-view-toggle">
+                <button class="view-btn active" data-view="bar" data-chart="category" onclick="toggleChartView('category', 'bar')">
+                  <i data-lucide="bar-chart-3" style="width: 16px; height: 16px;"></i>
+                </button>
+                <button class="view-btn" data-view="table" data-chart="category" onclick="toggleChartView('category', 'table')">
+                  <i data-lucide="table" style="width: 16px; height: 16px;"></i>
+                </button>
+              </div>
+            </div>
+            <div class="report-body">
+              <div id="category-pivot-chart-container">
+                <div class="chart-container" id="category-pivot-chart">
+                  <div class="chart-placeholder">
+                    <i data-lucide="loader-2" class="spin" style="width: 24px; height: 24px;"></i>
+                    <span style="margin-left: 8px;">Loading category data...</span>
+                  </div>
+                </div>
+              </div>
+              <div id="category-table-container" style="display: none;">
+                <table class="data-table pivot-table">
+                  <thead>
+                    <tr>
+                      <th>Category</th>
+                      <th class="text-center">Total</th>
+                      <th class="text-center">Corrective</th>
+                      <th class="text-center">Preventive</th>
+                      <th class="text-center">Urgent</th>
+                      <th class="text-center">High</th>
+                      <th class="text-center">Normal</th>
+                      <th class="text-center">Low</th>
+                    </tr>
+                  </thead>
+                  <tbody id="category-table-body">
+                    <tr><td colspan="8" style="text-align: center; padding: 40px;">Loading...</td></tr>
+                  </tbody>
+                  <tfoot id="category-table-footer"></tfoot>
+                </table>
+              </div>
+            </div>
+          </div>
+          
           <div class="report-card">
             <div class="report-header">
               <h3 class="report-title">Requests by Status</h3>
@@ -320,6 +422,170 @@
   background: var(--muted-bg);
   color: var(--text-secondary);
 }
+
+/* Pivot Chart Styles */
+.chart-view-toggle {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-hover);
+  padding: 4px;
+  border-radius: var(--radius-md);
+}
+
+.view-btn {
+  padding: 6px 10px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.view-btn:hover {
+  color: var(--text-primary);
+}
+
+.view-btn.active {
+  background: var(--card-bg);
+  color: var(--primary);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.pivot-table th.text-center,
+.pivot-table td.text-center {
+  text-align: center;
+}
+
+.pivot-table tfoot td {
+  font-weight: 600;
+  background: var(--bg-hover);
+  border-top: 2px solid var(--border-color);
+}
+
+.team-color-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.pivot-bar-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pivot-bar-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.pivot-bar-label {
+  width: 150px;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+}
+
+.pivot-bar-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pivot-bar-track {
+  flex: 1;
+  height: 32px;
+  background: var(--bg-hover);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  position: relative;
+}
+
+.pivot-bar-fill {
+  height: 100%;
+  border-radius: var(--radius-sm);
+  transition: width 0.5s ease;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 8px;
+  min-width: 40px;
+}
+
+.pivot-bar-fill span {
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.pivot-bar-value {
+  width: 60px;
+  text-align: right;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.pivot-bar-breakdown {
+  display: flex;
+  gap: 4px;
+  height: 100%;
+}
+
+.pivot-bar-segment {
+  height: 100%;
+  transition: width 0.5s ease;
+  position: relative;
+}
+
+.pivot-bar-segment:first-child {
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+}
+
+.pivot-bar-segment:last-child {
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.pivot-legend {
+  display: flex;
+  gap: 16px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.pivot-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.pivot-legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
 </style>
 
 <script>
@@ -327,6 +593,8 @@ let equipment = [];
 let requests = [];
 let categories = [];
 let stages = [];
+let teamReportData = null;
+let categoryReportData = null;
 
 document.addEventListener('DOMContentLoaded', loadReportData);
 
@@ -347,9 +615,271 @@ async function loadReportData() {
     updateSummary();
     renderCharts();
     renderActivityTable();
+    
+    // Load pivot report data
+    loadPivotReports();
   } catch (error) {
     console.error('Failed to load report data:', error);
   }
+}
+
+// Load pivot reports from dedicated API endpoints
+async function loadPivotReports() {
+  try {
+    // Load requests by team
+    const teamResponse = await fetch('/api/reports/requests-by-team');
+    if (teamResponse.ok) {
+      teamReportData = await teamResponse.json();
+      renderTeamPivotChart();
+      renderTeamPivotTable();
+    }
+    
+    // Load requests by category
+    const categoryResponse = await fetch('/api/reports/requests-by-category');
+    if (categoryResponse.ok) {
+      categoryReportData = await categoryResponse.json();
+      renderCategoryPivotChart();
+      renderCategoryPivotTable();
+    }
+  } catch (error) {
+    console.error('Failed to load pivot reports:', error);
+    document.getElementById('team-chart').innerHTML = '<div class="chart-placeholder">Failed to load data</div>';
+    document.getElementById('category-pivot-chart').innerHTML = '<div class="chart-placeholder">Failed to load data</div>';
+  }
+  
+  lucide.createIcons();
+}
+
+// Toggle between chart and table view
+function toggleChartView(chart, view) {
+  // Update button states
+  document.querySelectorAll(`[data-chart="${chart}"]`).forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.view === view);
+  });
+  
+  if (chart === 'team') {
+    document.getElementById('team-chart-container').style.display = view === 'bar' ? 'block' : 'none';
+    document.getElementById('team-table-container').style.display = view === 'table' ? 'block' : 'none';
+  } else if (chart === 'category') {
+    document.getElementById('category-pivot-chart-container').style.display = view === 'bar' ? 'block' : 'none';
+    document.getElementById('category-table-container').style.display = view === 'table' ? 'block' : 'none';
+  }
+  
+  lucide.createIcons();
+}
+
+// Render Team Pivot Bar Chart
+function renderTeamPivotChart() {
+  const container = document.getElementById('team-chart');
+  if (!teamReportData || !teamReportData.data.length) {
+    container.innerHTML = '<div class="chart-placeholder">No team data available</div>';
+    return;
+  }
+  
+  const data = teamReportData.data;
+  const maxValue = Math.max(...data.map(d => d.total), 1);
+  
+  let html = '<div class="pivot-bar-chart">';
+  
+  data.forEach(item => {
+    const widthPct = (item.total / maxValue) * 100;
+    const openPct = item.total > 0 ? (item.open / item.total) * 100 : 0;
+    const completedPct = item.total > 0 ? (item.completed / item.total) * 100 : 0;
+    
+    html += `
+      <div class="pivot-bar-item">
+        <div class="pivot-bar-label">
+          <span class="team-color-dot" style="background: ${item.team_color || '#6366f1'}"></span>
+          ${item.team_name}
+        </div>
+        <div class="pivot-bar-container">
+          <div class="pivot-bar-track">
+            <div class="pivot-bar-breakdown" style="width: ${widthPct}%;">
+              <div class="pivot-bar-segment" style="width: ${openPct}%; background: #f59e0b;" title="Open: ${item.open}"></div>
+              <div class="pivot-bar-segment" style="width: ${completedPct}%; background: #22c55e;" title="Completed: ${item.completed}"></div>
+            </div>
+          </div>
+          <div class="pivot-bar-value">${item.total}</div>
+        </div>
+      </div>
+    `;
+  });
+  
+  html += '</div>';
+  html += `
+    <div class="pivot-legend">
+      <div class="pivot-legend-item">
+        <div class="pivot-legend-color" style="background: #f59e0b;"></div>
+        <span>Open</span>
+      </div>
+      <div class="pivot-legend-item">
+        <div class="pivot-legend-color" style="background: #22c55e;"></div>
+        <span>Completed</span>
+      </div>
+    </div>
+  `;
+  
+  container.innerHTML = html;
+}
+
+// Render Team Pivot Table
+function renderTeamPivotTable() {
+  const tbody = document.getElementById('team-table-body');
+  const tfoot = document.getElementById('team-table-footer');
+  
+  if (!teamReportData || !teamReportData.data.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: var(--text-muted);">No team data available</td></tr>';
+    return;
+  }
+  
+  const data = teamReportData.data;
+  let totals = { total: 0, open: 0, completed: 0, urgent: 0, high: 0, normal: 0, low: 0 };
+  
+  tbody.innerHTML = data.map(item => {
+    totals.total += item.total;
+    totals.open += item.open;
+    totals.completed += item.completed;
+    totals.urgent += item.by_priority.urgent;
+    totals.high += item.by_priority.high;
+    totals.normal += item.by_priority.normal;
+    totals.low += item.by_priority.low;
+    
+    return `
+      <tr>
+        <td>
+          <span class="team-color-dot" style="background: ${item.team_color || '#6366f1'}"></span>
+          ${item.team_name}
+        </td>
+        <td class="text-center"><strong>${item.total}</strong></td>
+        <td class="text-center" style="color: var(--warning);">${item.open}</td>
+        <td class="text-center" style="color: var(--success);">${item.completed}</td>
+        <td class="text-center"><span class="priority-badge" style="background: #fee2e2; color: #dc2626;">${item.by_priority.urgent}</span></td>
+        <td class="text-center"><span class="priority-badge" style="background: #fef3c7; color: #d97706;">${item.by_priority.high}</span></td>
+        <td class="text-center"><span class="priority-badge" style="background: #e0f2fe; color: #0284c7;">${item.by_priority.normal}</span></td>
+        <td class="text-center"><span class="priority-badge" style="background: #dcfce7; color: #16a34a;">${item.by_priority.low}</span></td>
+      </tr>
+    `;
+  }).join('');
+  
+  tfoot.innerHTML = `
+    <tr>
+      <td><strong>Total</strong></td>
+      <td class="text-center"><strong>${totals.total}</strong></td>
+      <td class="text-center" style="color: var(--warning);"><strong>${totals.open}</strong></td>
+      <td class="text-center" style="color: var(--success);"><strong>${totals.completed}</strong></td>
+      <td class="text-center"><strong>${totals.urgent}</strong></td>
+      <td class="text-center"><strong>${totals.high}</strong></td>
+      <td class="text-center"><strong>${totals.normal}</strong></td>
+      <td class="text-center"><strong>${totals.low}</strong></td>
+    </tr>
+  `;
+}
+
+// Render Category Pivot Bar Chart
+function renderCategoryPivotChart() {
+  const container = document.getElementById('category-pivot-chart');
+  if (!categoryReportData || !categoryReportData.data.length) {
+    container.innerHTML = '<div class="chart-placeholder">No category data available</div>';
+    return;
+  }
+  
+  const data = categoryReportData.data;
+  const maxValue = Math.max(...data.map(d => d.total), 1);
+  
+  let html = '<div class="pivot-bar-chart">';
+  
+  data.forEach(item => {
+    const widthPct = (item.total / maxValue) * 100;
+    const correctivePct = item.total > 0 ? (item.corrective / item.total) * 100 : 0;
+    const preventivePct = item.total > 0 ? (item.preventive / item.total) * 100 : 0;
+    
+    html += `
+      <div class="pivot-bar-item">
+        <div class="pivot-bar-label">
+          <span class="team-color-dot" style="background: ${item.category_color}"></span>
+          ${item.category_name}
+        </div>
+        <div class="pivot-bar-container">
+          <div class="pivot-bar-track">
+            <div class="pivot-bar-breakdown" style="width: ${widthPct}%;">
+              <div class="pivot-bar-segment" style="width: ${correctivePct}%; background: #ef4444;" title="Corrective: ${item.corrective}"></div>
+              <div class="pivot-bar-segment" style="width: ${preventivePct}%; background: #3b82f6;" title="Preventive: ${item.preventive}"></div>
+            </div>
+          </div>
+          <div class="pivot-bar-value">${item.total}</div>
+        </div>
+      </div>
+    `;
+  });
+  
+  html += '</div>';
+  html += `
+    <div class="pivot-legend">
+      <div class="pivot-legend-item">
+        <div class="pivot-legend-color" style="background: #ef4444;"></div>
+        <span>Corrective</span>
+      </div>
+      <div class="pivot-legend-item">
+        <div class="pivot-legend-color" style="background: #3b82f6;"></div>
+        <span>Preventive</span>
+      </div>
+    </div>
+  `;
+  
+  container.innerHTML = html;
+}
+
+// Render Category Pivot Table
+function renderCategoryPivotTable() {
+  const tbody = document.getElementById('category-table-body');
+  const tfoot = document.getElementById('category-table-footer');
+  
+  if (!categoryReportData || !categoryReportData.data.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: var(--text-muted);">No category data available</td></tr>';
+    return;
+  }
+  
+  const data = categoryReportData.data;
+  let totals = { total: 0, corrective: 0, preventive: 0, urgent: 0, high: 0, normal: 0, low: 0 };
+  
+  tbody.innerHTML = data.map(item => {
+    totals.total += item.total;
+    totals.corrective += item.corrective;
+    totals.preventive += item.preventive;
+    totals.urgent += item.by_priority.urgent;
+    totals.high += item.by_priority.high;
+    totals.normal += item.by_priority.normal;
+    totals.low += item.by_priority.low;
+    
+    return `
+      <tr>
+        <td>
+          <span class="team-color-dot" style="background: ${item.category_color}"></span>
+          ${item.category_name}
+        </td>
+        <td class="text-center"><strong>${item.total}</strong></td>
+        <td class="text-center" style="color: var(--danger);">${item.corrective}</td>
+        <td class="text-center" style="color: var(--primary);">${item.preventive}</td>
+        <td class="text-center"><span class="priority-badge" style="background: #fee2e2; color: #dc2626;">${item.by_priority.urgent}</span></td>
+        <td class="text-center"><span class="priority-badge" style="background: #fef3c7; color: #d97706;">${item.by_priority.high}</span></td>
+        <td class="text-center"><span class="priority-badge" style="background: #e0f2fe; color: #0284c7;">${item.by_priority.normal}</span></td>
+        <td class="text-center"><span class="priority-badge" style="background: #dcfce7; color: #16a34a;">${item.by_priority.low}</span></td>
+      </tr>
+    `;
+  }).join('');
+  
+  tfoot.innerHTML = `
+    <tr>
+      <td><strong>Total</strong></td>
+      <td class="text-center"><strong>${totals.total}</strong></td>
+      <td class="text-center" style="color: var(--danger);"><strong>${totals.corrective}</strong></td>
+      <td class="text-center" style="color: var(--primary);"><strong>${totals.preventive}</strong></td>
+      <td class="text-center"><strong>${totals.urgent}</strong></td>
+      <td class="text-center"><strong>${totals.high}</strong></td>
+      <td class="text-center"><strong>${totals.normal}</strong></td>
+      <td class="text-center"><strong>${totals.low}</strong></td>
+    </tr>
+  `;
 }
 
 function updateSummary() {

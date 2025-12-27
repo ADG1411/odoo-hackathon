@@ -873,7 +873,139 @@ def reports_summary():
     })
 
 
-@api.route('/reports/equipment-breakdown')
+@api.route('/reports/requests-by-team')
+@login_required
+@permission_required('can_view_reports')
+def requests_by_team_report():
+    """Get number of requests per team (Pivot Report)"""
+    # Get all teams with their request counts by status
+    teams = MaintenanceTeam.query.all()
+    result = []
+    
+    for team in teams:
+        # Count by priority
+        urgent = MaintenanceRequest.query.filter_by(team_id=team.id, priority='urgent').count()
+        high = MaintenanceRequest.query.filter_by(team_id=team.id, priority='high').count()
+        normal = MaintenanceRequest.query.filter_by(team_id=team.id, priority='normal').count()
+        low = MaintenanceRequest.query.filter_by(team_id=team.id, priority='low').count()
+        
+        # Count by stage (open vs completed)
+        open_count = db.session.query(MaintenanceRequest).join(MaintenanceStage).filter(
+            MaintenanceRequest.team_id == team.id,
+            MaintenanceStage.is_done == False,
+            MaintenanceStage.is_scrap == False
+        ).count()
+        
+        completed_count = db.session.query(MaintenanceRequest).join(MaintenanceStage).filter(
+            MaintenanceRequest.team_id == team.id,
+            MaintenanceStage.is_done == True
+        ).count()
+        
+        total = MaintenanceRequest.query.filter_by(team_id=team.id).count()
+        
+        result.append({
+            'team_id': team.id,
+            'team_name': team.name,
+            'team_color': team.color,
+            'total': total,
+            'open': open_count,
+            'completed': completed_count,
+            'by_priority': {
+                'urgent': urgent,
+                'high': high,
+                'normal': normal,
+                'low': low
+            }
+        })
+    
+    # Also add unassigned requests
+    unassigned = MaintenanceRequest.query.filter_by(team_id=None).count()
+    if unassigned > 0:
+        result.append({
+            'team_id': None,
+            'team_name': 'Unassigned',
+            'team_color': '#6c757d',
+            'total': unassigned,
+            'open': unassigned,
+            'completed': 0,
+            'by_priority': {
+                'urgent': MaintenanceRequest.query.filter_by(team_id=None, priority='urgent').count(),
+                'high': MaintenanceRequest.query.filter_by(team_id=None, priority='high').count(),
+                'normal': MaintenanceRequest.query.filter_by(team_id=None, priority='normal').count(),
+                'low': MaintenanceRequest.query.filter_by(team_id=None, priority='low').count()
+            }
+        })
+    
+    return jsonify({
+        'data': result,
+        'total_requests': sum(r['total'] for r in result)
+    })
+
+
+@api.route('/reports/requests-by-category')
+@login_required
+@permission_required('can_view_reports')
+def requests_by_category_report():
+    """Get number of requests per equipment category (Pivot Report)"""
+    # Get requests grouped by equipment category
+    result = db.session.query(
+        EquipmentCategory.id,
+        EquipmentCategory.name,
+        EquipmentCategory.color,
+        func.count(MaintenanceRequest.id).label('total')
+    ).join(
+        Equipment, Equipment.category_id == EquipmentCategory.id
+    ).join(
+        MaintenanceRequest, MaintenanceRequest.equipment_id == Equipment.id
+    ).group_by(EquipmentCategory.id).all()
+    
+    data = []
+    for cat_id, cat_name, cat_color, total in result:
+        # Get breakdown by request type
+        corrective = db.session.query(func.count(MaintenanceRequest.id)).join(
+            Equipment, Equipment.id == MaintenanceRequest.equipment_id
+        ).filter(
+            Equipment.category_id == cat_id,
+            MaintenanceRequest.request_type == 'corrective'
+        ).scalar()
+        
+        preventive = db.session.query(func.count(MaintenanceRequest.id)).join(
+            Equipment, Equipment.id == MaintenanceRequest.equipment_id
+        ).filter(
+            Equipment.category_id == cat_id,
+            MaintenanceRequest.request_type == 'preventive'
+        ).scalar()
+        
+        # Get breakdown by priority
+        by_priority = {}
+        for priority in ['urgent', 'high', 'normal', 'low']:
+            count = db.session.query(func.count(MaintenanceRequest.id)).join(
+                Equipment, Equipment.id == MaintenanceRequest.equipment_id
+            ).filter(
+                Equipment.category_id == cat_id,
+                MaintenanceRequest.priority == priority
+            ).scalar()
+            by_priority[priority] = count or 0
+        
+        data.append({
+            'category_id': cat_id,
+            'category_name': cat_name,
+            'category_color': cat_color or '#6366f1',
+            'total': total,
+            'corrective': corrective or 0,
+            'preventive': preventive or 0,
+            'by_priority': by_priority
+        })
+    
+    # Sort by total descending
+    data.sort(key=lambda x: x['total'], reverse=True)
+    
+    return jsonify({
+        'data': data,
+        'total_requests': sum(d['total'] for d in data)
+    })
+
+
 @login_required
 @permission_required('can_view_reports')
 def equipment_breakdown_report():
